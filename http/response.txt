@@ -1,0 +1,8 @@
+HTTP/1.1 200 OK
+Date: Thu, 20 Jan 2022 12:00:00 GMT
+Server: MyCustomServer/1.0
+Content-Type: text/html; charset=utf-8
+Content-Length: 123
+Connection: keep-alive
+
+fuck you
