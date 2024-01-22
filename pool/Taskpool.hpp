@@ -56,7 +56,7 @@ void Taskpool::start(){
     }};
     common.worker = std::thread{ [this](){ common.work(); } };
     }
-    submittask([]{ vastina_log::logtest("taskpool init"); } , importance::lowest);
+    submittask([]{ vastina::logtest("taskpool init"); } , importance::lowest);
 }
 
 void Taskpool::lastwork() {

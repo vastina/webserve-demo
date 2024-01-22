@@ -10,7 +10,7 @@
 
 #include "tools.h"
 #include "log/loger.hpp"
-#include "http/http.h"
+#include "http/http.hpp"
 
 class server{
 private:
@@ -50,11 +50,13 @@ void server::setsock(int af,int type,int protocol, short port){
     serveraddr.sin_port = htons(port) ;
     if(bind(serversock, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1)
     {
-        errorhandling("bind fail, error code: {}\n", errno);
+        printf("bind fail, error code: %d\n", errno);
+        //errorhandling("bind fail, error code: {}\n", errno);
     }
     if(listen(serversock, 6) == -1)
     {
-        vastina::logtest(std::format("listen fail, error code: {}\n", errno).c_str());
+        printf("listen fail, error code: %d\n", errno);
+        //vastina::logtest(std::format("listen fail, error code: {}\n", errno).c_str());
     }
     
 }
@@ -87,7 +89,7 @@ void server::run(){
                 event.data.fd = clntsock ;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, clntsock, &event);
                 clients[clntsock] = new vastina::http();
-                std::cout <<"connceted: "<< clntsock <<"\n\n";
+                std::cout <<"connceted: "<< clntsock <<'\n' ;
             }
             else
             {
