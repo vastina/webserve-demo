@@ -11,6 +11,7 @@
 #include "tools.h"
 #include "log/loger.hpp"
 #include "http/http.hpp"
+#include "buffer/buffer.hpp"
 
 class server{
 private:
@@ -20,7 +21,8 @@ private:
     int epfd, event_cnt;
     size_t maxevents;
 
-    char readbuffer[BUFSIZE], sendbuffer[BUFSIZE] ; //to be finished as a class
+    //char readbuffer[BUFSIZE], sendbuffer[BUFSIZE] ; //to be finished as a class or struct
+    Buffer *buffer;
 
     std::unordered_map<int, vastina::http*> clients;
 
@@ -29,7 +31,8 @@ public:
         epfd{epoll_create(_maxevents)},  
         maxevents{_maxevents}, 
         clients{ } {
-        ep_events = new epoll_event[_maxevents]; }
+        ep_events = new epoll_event[_maxevents];
+        buffer = new Buffer(); }
     ~server(){
         delete ep_events;
         for(auto &client:clients){ delete client.second; }
@@ -45,8 +48,8 @@ void server::setsock(int af,int type,int protocol, short port){
     struct sockaddr_in serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));
     serveraddr.sin_family = af;
-    serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    //serveraddr.sin_addr.s_addr = htonl(INADDR_ANY) ;
+    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    //serveraddr.sin_addr.s_addr = inet_addr("47.107.39.53");
     serveraddr.sin_port = htons(port) ;
     if(bind(serversock, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1)
     {
@@ -65,8 +68,8 @@ void server::init(){
     event.data.fd = serversock ;
     event.events = EPOLLIN ;
     epoll_ctl(epfd, EPOLL_CTL_ADD, serversock, &event);
-    memset(readbuffer, 0, sizeof(readbuffer));
-    memset(sendbuffer, 0, sizeof(sendbuffer));
+    // memset(readbuffer, 0, sizeof(readbuffer));
+    // memset(sendbuffer, 0, sizeof(sendbuffer));
 }
 
 void server::run(){
@@ -93,9 +96,9 @@ void server::run(){
             }
             else
             {
-                int str_len = read(ep_events->data.fd, readbuffer, sizeof(readbuffer));
+                buffer->autoread(ep_events->data.fd);
 
-                if(str_len == 0)
+                if(buffer->get_readcount() == 0)
                 {
                     epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[i].data.fd, nullptr);
                     close(ep_events[i].data.fd);
@@ -103,8 +106,9 @@ void server::run(){
                 }
                 else
                 {
-                    vastina::getreponse_test(readbuffer, sendbuffer);
-                    write(ep_events[i].data.fd, sendbuffer, sizeof(sendbuffer));
+                    char path[100] ;    bzero(path, sizeof(path));
+                    clients[ep_events[i].data.fd]->getreponse_test(buffer->readbuffer_ptr(), path);
+                    buffer->autosend(ep_events[i].data.fd, path);
                 }
             }
         }
