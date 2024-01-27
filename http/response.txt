@@ -2,7 +2,36 @@ HTTP/1.1 200 OK
 Date: Thu, 20 Jan 2022 12:00:00 GMT
 Server: MyCustomServer/1.0
 Content-Type: text/html; charset=utf-8
-Content-Length: 250
+Content-Length: 1000
 Connection: keep-alive
 
-fuck you
+<!DOCTYPE html>
+<html>
+<head>
+<title>?</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>VASTINA</h1>
+
+<p>This is vastina, see me at
+<a href="https://github.com/vastina">github</a>.<br/>
+
+<div>
+<script>
+function displayDate()
+{
+        document.getElementById("datetest").innerHTML=Date();
+}
+</script>
+<h2>date test</h2>
+<p id="datetest">press the button blow</p>
+<button type="button" onclick="displayDate()">show date</button>
+</div>
+
+</body>
+</html>

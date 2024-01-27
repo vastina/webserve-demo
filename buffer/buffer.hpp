@@ -11,11 +11,15 @@
 
 class Buffer {
 public:
-    Buffer() : read_cnt{0}, send_cnt{0}, last_read{0}, last_send{0} {
+    Buffer() : read_cnt{0}, send_cnt{0}, last_read{0}, last_send{0} {    
         memset(readbuffer, 0, sizeof(readbuffer));
         memset(sendbuffer, 0, sizeof(sendbuffer));  
         fs = new std::fstream();
     };
+    ~Buffer(){
+        //delete []readbuffer;    delete []sendbuffer;    
+        delete fs;
+    }
 private:
     char readbuffer[BUFSIZ], sendbuffer[BUFSIZ];
     size_t read_cnt, send_cnt;
@@ -30,11 +34,12 @@ public:
     size_t get_sendcount();
 
     void readn(size_t n, int fd);
-    void autoread(int fd);
+    int autoread(int fd);
     void sendn(size_t n, int fd);
     void autosend(int fd, const char* filename);
 
     const char* readbuffer_ptr();
+    const char* buffer_lastread();
     const char* sendbuffer_ptr();
 };
 
@@ -62,7 +67,7 @@ void Buffer::readn(size_t n, int fd){
     readbuffer[(read_cnt+=n)] = 0;
 }
 
-void Buffer::autoread(int fd){
+int Buffer::autoread(int fd){
     int count = -1;
     if((count = read(fd, (void*)(readbuffer+read_cnt), BUFSIZ-read_cnt)) == -1)
         std::cout <<__FILE__ << " Buffer::autoread\n";
@@ -72,6 +77,7 @@ void Buffer::autoread(int fd){
         read_cnt += count;
     } 
     printf("count:%d readcnt:%ld lastread:%ld\n", count, read_cnt, last_read);
+    return count;
 }
 
 void Buffer::sendn(size_t n, int fd){
@@ -89,12 +95,17 @@ void Buffer::autosend(int fd, const char* filename){
         printf("buffer.hpp void Buffer::autosend(int fd, const char* filename), %d", errno);
         return;
     }
-    //int count = -1;
+    int count = -1;
     while(!fs->eof())
     {
-        fs->read(sendbuffer, BUFSIZ);//BUFSIZ>>5
-        write(fd, sendbuffer, BUFSIZ);
-        resetsend();
+        fs->read(sendbuffer, BUFSIZ>>5);
+        if((count = write(fd, sendbuffer, BUFSIZ>>5)) == -1)
+            std::cout << __FILE__ << "\autosendn";
+        if(send_cnt+count > BUFSIZ-100) resetsend();
+        else{
+            last_send = send_cnt;
+            send_cnt += count;
+        }
     }    
     fs->close();
 }
@@ -102,7 +113,11 @@ void Buffer::autosend(int fd, const char* filename){
 const char* Buffer::readbuffer_ptr(){
     // static char *ptr;
     // ptr = (readbuffer + last_read);
-    std::cout << *(readbuffer + last_read) <<"ptr\n";
+    //std::cout << *(readbuffer + last_read) <<"ptr\n";
+    return (readbuffer + read_cnt);
+}
+
+const char* Buffer::buffer_lastread(){
     return (readbuffer + last_read);
 }
 
