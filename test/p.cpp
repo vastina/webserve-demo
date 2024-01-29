@@ -11,7 +11,10 @@ int main(){
         fs.read(buffer, BUFSIZ);
     fs.close();
 
-    HttpParser *parser = new HttpParser(buffer);
-    parser->show();
-    delete parser;
+    HttpParser parser = HttpParser(buffer);
+    parser.show();
+
+    std::cout << parser["Method"] <<'\n';
+    std::cout << parser["Path"] <<'\n';
+    std::cout << parser["Version"] <<'\n';
 }

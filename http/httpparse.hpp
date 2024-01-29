@@ -32,8 +32,18 @@ public:
     httpparser(): results{} {};
     ~httpparser(){};
     void autoparse(const char* buf);
+    std::string operator[](std::string str);
     std::string operator[](std::string& str);
+
+    std::string getMethod();
+    std::string getPath();
+    std::string getProtocol();
 };
+
+std::string httpparser::getMethod() { return results["method"]; }
+std::string httpparser::getPath() { return results["path"]; }
+std::string httpparser::getProtocol() { return results["version"]; }
+
 
 void httpparser::autoparse(const char* buf){
     std::istringstream buf_stream(buf);
@@ -96,19 +106,24 @@ void httpparser::autoparse(const char* buf){
     results.insert(std::make_pair("body", body_string));
 }
 
+std::string httpparser::operator[](std::string str){
+    auto it = results.find(format_key(str));
+    return it != results.end() ? it->second : "";
+}
+
 std::string httpparser::operator[](std::string& str){
     auto it = results.find(format_key(str));
     return it != results.end() ? it->second : "";
 }
 
 std::string httpparser::format_key(std::string &str){
-    if(str[0] >= 'a' && str[0] <= 'z'){
-        str[0] = str[0] + 'A' - 'a';
+    if(str[0] >= 'A' && str[0] <= 'Z'){
+        str[0] = str[0] - 'A' + 'a';
     }
     int position = 0;
     while((position = str.find("-", position)) != std::string::npos){
-        if(str[position + 1] >= 'a' && str[position + 1] <= 'z'){
-            str[position + 1] = str[position + 1] + 'A' - 'a';
+        if(str[position + 1] >= 'A' && str[position + 1] <= 'Z'){
+            str[position + 1] = str[position + 1] - 'A' + 'a';
         }
         position++;
     }

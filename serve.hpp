@@ -29,7 +29,7 @@ private:
     char readbuffer[BUFSIZE], sendbuffer[BUFSIZE] ; 
     //Buffer *buffer;
     //to be finished as a class or struct
-    //vastina::Listener *listener;
+    bool stopflag;
 
     std::unordered_map<int, vastina::http*> clients;
 
@@ -44,6 +44,7 @@ public:
     }
     void init();
     void setsock(int af,int type,int protocol, short port = 1453);
+    void closeFD(int fd);
     void run();
     void end();
 };
@@ -74,13 +75,22 @@ void server::setsock(int af,int type,int protocol, short port){
 
 void server::init(){
     ep->init(serversock);
+    stopflag = true;
+    vastina::cachetree::getInstance().init_read();
 }
 
+void server::closeFD(int fd){
+    ep->epoll_del(fd);
+    delete clients[fd];
+    clients.erase(fd);
+}
+
+
 void server::run(){
-    bool flag = true;
+
     std::cout <<"Enter q to quit\n";
 
-    while (flag)
+    while (stopflag)
     {
         int event_cnt = ep->Epoll_wait();
         if(event_cnt == -1)
@@ -89,15 +99,18 @@ void server::run(){
         }
         for(auto i=0; i<event_cnt; ++i)
         {
-            if(ep->getevent(i) & EPOLLIN) //ep->getfd(i) == serversock
+            if(ep->getevent(i) & EPOLLIN)
             {
-                if(ep->getfd(i) == STDIN_FILENO){
+                if(ep->getfd(i) == STDIN_FILENO)
+                {
                     std::string input{""};
                     std::getline(std::cin, input);
-                    if(input == "q") flag = false;
-                }
+                    if(input == "q") stopflag = false;
+                    std::cout << "input: " << input << '\n';
+                    //to do: notify other threads, or after break
+                } 
 
-                else if(ep->getfd(i) == serversock)
+                if(ep->getfd(i) == serversock)
                 {
                     int clntsock = accept(serversock, nullptr, nullptr);
                     ep->epoll_add(clntsock);
@@ -108,8 +121,9 @@ void server::run(){
                     int str_len = read(ep->getfd(i), readbuffer, sizeof(readbuffer));
                     if(str_len == 0)
                     {
-                        //std::cout << "closed: " << ep->getfd(i) << '\n';
-                        ep->epoll_del(i);
+                        int sock = ep->getfd(i);
+                        if(clients[sock]->connection_check())
+                            closeFD(sock);
                     }
                     else
                     {
@@ -132,6 +146,7 @@ void server::run(){
 void server::end(){
     close(serversock);
     for(auto &client:clients){ delete client.second; }
+    ep->~Epoll();
     delete ep;
 }
 

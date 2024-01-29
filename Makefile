@@ -1,5 +1,5 @@
 s ?= serve.cpp
-e ?= 2
+e ?= front/2
 CXXFLAGS := -std=c++20 -pthread -Wall -g  -fsanitize=thread
 main: 	$(s)
-		g++ $(s) $(CXXFLAGS) -o$(e)
+		g++ $(s) $(CXXFLAGS) -o $(e)

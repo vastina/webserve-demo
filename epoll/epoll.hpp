@@ -45,9 +45,9 @@ Epoll::~Epoll(){
 
 
 void Epoll::init(int serversock){
-    event.events = EPOLLIN;
-    event.data.fd = STDIN_FILENO;
-    epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
+    // event.events = EPOLLIN;
+    // event.data.fd = STDIN_FILENO;
+    // epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
 
     event.data.fd = serversock;
     event.events = EPOLLIN | EPOLLET;
@@ -81,13 +81,13 @@ int Epoll::getfd(int index){
     return ep_events[index].data.fd;
 }
 
-bool Epoll::stdincheck(int index){
-    if(STDIN_FILENO == ep_events[index].data.fd){
-        std::string input{""};
-        std::getline(std::cin, input);
-        if(input == "q") return true;
-    }   return false;
-}
+// bool Epoll::stdincheck(int index){
+//     if(STDIN_FILENO == ep_events[index].data.fd){
+//         std::string input{""};
+//         std::getline(std::cin, input);
+//         if(input == "q") return true;
+//     }   return false;
+// } there's some problem
 
 }
 

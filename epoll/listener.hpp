@@ -19,25 +19,31 @@ namespace vastina{
 class Listener{
 private:
     int serversock;
-    Epoll *ep;
+    bool stopflag;
+    Epoll *ep;      
     std::unordered_map<int, vastina::http*> clients;
 
 public:
     Listener();
+    void init();
     void setserversock(int af,int type,int protocol, short port);
     void accepter();
     void closeFd(int fd);
 };
 
-Listener::Listener(){
+Listener::Listener(): clients{} {
     ep = new Epoll();
-    ep->init(serversock);
 }
 
 void Listener::closeFd(int fd){
     ep->epoll_del(fd);
     delete clients[fd];
     clients.erase(fd);
+}
+
+void Listener::init(){
+    ep->init(serversock);
+    stopflag = true;
 }
 
 void Listener::setserversock(int af,int type,int protocol, short port){
@@ -64,9 +70,8 @@ void Listener::setserversock(int af,int type,int protocol, short port){
 }
 
 void Listener::accepter(){
-    bool flag = true;
 
-    while (true)
+    while (stopflag)
     {
         int event_cnt = ep->Epoll_wait();
         if(event_cnt == -1)
@@ -75,7 +80,11 @@ void Listener::accepter(){
         }
         for(auto i=0; i<event_cnt; ++i)
         {
-            if(ep->stdincheck(i)) flag = false;
+            if(/*ep->stdincheck(i)*/false)
+            {
+                stopflag = false;
+                //to do...
+            } 
 
             if(ep->getevent(i) & EPOLLIN) //ep->getfd(i) == serversock
             {

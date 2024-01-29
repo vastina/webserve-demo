@@ -29,7 +29,7 @@ function displayDate()
 }
 </script>
 <h2>date test</h2>
-<p id="datetest">press the button blow</p>
+<p id="datetest">press the button below</p>
 <button type="button" onclick="displayDate()">show date</button>
 </div>
 

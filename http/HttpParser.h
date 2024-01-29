@@ -34,17 +34,17 @@ HttpParser::HttpParser(char *msg){
                 std::string tmp;
                 line_stream >> tmp;
                 if(tmp.find("HTTP") == std::string::npos){
-                    http.insert(std::make_pair("method", tmp));
+                    http.insert(std::make_pair("Method", tmp));
                     line_stream >> tmp;
-                    http.insert(std::make_pair("path", tmp));
+                    http.insert(std::make_pair("Path", tmp));
                     line_stream >> tmp;
-                    http.insert(std::make_pair("version", tmp));
+                    http.insert(std::make_pair("Version", tmp));
                 } else{
-                    http.insert(std::make_pair("version", tmp));
+                    http.insert(std::make_pair("Version", tmp));
                     line_stream >> tmp;
-                    http.insert(std::make_pair("status", tmp));
+                    http.insert(std::make_pair("Status", tmp));
                     line_stream >> tmp;
-                    http.insert(std::make_pair("status_text", tmp));
+                    http.insert(std::make_pair("Status_text", tmp));
                 }
                 part = headers;
                 break;
@@ -86,6 +86,9 @@ void HttpParser::show(){
 
 std::string HttpParser::operator[](std::string str){
     auto it = http.find(format_key(str));
+    
+    std::cout << str <<'\n';
+    
     return it != http.end() ? it->second : "";
 }
 
