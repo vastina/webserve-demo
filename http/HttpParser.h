@@ -1,41 +1,21 @@
-#ifndef _HTTP_PARSE_H_
-#define _HTTP_PARSE_H_
-
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <sstream>
 #include <iostream>
-#include <regex>
 
-namespace vastina{
-    
-// constexpr enum METHOD{
-//      GET = 0
-//     ,POST
-//     ,DELETE
-//     ,PUT
-//     ,HEAD
-//     ,TRACE
-//     ,CONNECT
-//     ,OPTIONS
-//     ,PATCH
-// };
-
-
-class httpparser{
-
+class HttpParser{
 private:
-    //int state;
-    std::map<std::string, std::string> results;
+    std::map<std::string, std::string> http;
     std::string format_key(std::string &str);
 public:
-    httpparser(): results{} {};
-    ~httpparser(){};
-    void autoparse(const char* buf);
-    std::string operator[](std::string& str);
+    HttpParser(char *buf);
+    ~HttpParser();
+    void show();
+    std::string operator[](std::string str);
 };
 
-void httpparser::autoparse(const char* buf){
+HttpParser::HttpParser(char *msg){
+    std::string buf(msg);
     std::istringstream buf_stream(buf);
     enum parts{
         start_line,
@@ -54,17 +34,17 @@ void httpparser::autoparse(const char* buf){
                 std::string tmp;
                 line_stream >> tmp;
                 if(tmp.find("HTTP") == std::string::npos){
-                    results.insert(std::make_pair("method", tmp));
+                    http.insert(std::make_pair("method", tmp));
                     line_stream >> tmp;
-                    results.insert(std::make_pair("path", tmp));
+                    http.insert(std::make_pair("path", tmp));
                     line_stream >> tmp;
-                    results.insert(std::make_pair("version", tmp));
+                    http.insert(std::make_pair("version", tmp));
                 } else{
-                    results.insert(std::make_pair("version", tmp));
+                    http.insert(std::make_pair("version", tmp));
                     line_stream >> tmp;
-                    results.insert(std::make_pair("status", tmp));
+                    http.insert(std::make_pair("status", tmp));
                     line_stream >> tmp;
-                    results.insert(std::make_pair("status_text", tmp));
+                    http.insert(std::make_pair("status_text", tmp));
                 }
                 part = headers;
                 break;
@@ -80,7 +60,7 @@ void httpparser::autoparse(const char* buf){
                     continue;
                 std::string tmp1(line, 0, pos);
                 std::string tmp2(line, pos + 2);
-                results.insert(std::make_pair(format_key(tmp1), tmp2));
+                http.insert(std::make_pair(format_key(tmp1), tmp2));
                 break;
             }
             case body:
@@ -93,15 +73,23 @@ void httpparser::autoparse(const char* buf){
                 break;
         }
     }
-    results.insert(std::make_pair("body", body_string));
+    http.insert(std::make_pair("body", body_string));
 }
 
-std::string httpparser::operator[](std::string& str){
-    auto it = results.find(format_key(str));
-    return it != results.end() ? it->second : "";
+HttpParser::~HttpParser(){}
+
+void HttpParser::show(){
+    for(auto it = http.cbegin(); it != http.cend(); ++it){
+        std::cout << it->first << ": " << it->second << std::endl;
+    }
 }
 
-std::string httpparser::format_key(std::string &str){
+std::string HttpParser::operator[](std::string str){
+    auto it = http.find(format_key(str));
+    return it != http.end() ? it->second : "";
+}
+
+std::string HttpParser::format_key(std::string &str){
     if(str[0] >= 'a' && str[0] <= 'z'){
         str[0] = str[0] + 'A' - 'a';
     }
@@ -114,9 +102,3 @@ std::string httpparser::format_key(std::string &str){
     }
     return str;
 }
-
-}
-
-
-
-#endif

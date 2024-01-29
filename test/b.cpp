@@ -1,3 +1,5 @@
+//stupid bench
+
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
@@ -17,6 +19,8 @@ char buffer[BUFSIZ];
 struct sockaddr_in serveraddr;
 std::fstream fs;
 std::function<void(int)> func;
+constexpr size_t thread_number = 3;
+constexpr size_t thread_clients = 1;
 
 int main(int argv, char *argc[]){
     if(argv < 2) return 1;
@@ -30,10 +34,10 @@ int main(int argv, char *argc[]){
         fs.read(buffer, BUFSIZ);
         fs.close();
         std::cout << buffer <<'\n';
-    fs.open("result.txt", std::ofstream::out | std::ios::binary );
+    //fs.open("result.txt", std::ofstream::out | std::ios::binary );
     func = [](int n){
         char readbuffer[BUFSIZ];    bzero(readbuffer, sizeof(readbuffer));
-        for(int i=n*100; i<(n+1)*100; ++i){
+        for(int i=n*thread_clients; i<(n+1)*thread_clients; ++i){
             clients[i] = socket(AF_INET, SOCK_STREAM/*|SOCK_NONBLOCK*/, 0);
             if (connect(clients[i], (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == -1)
                 printf("connect error with code %d", errno);
@@ -43,14 +47,14 @@ int main(int argv, char *argc[]){
             count = read(clients[i], readbuffer, BUFSIZ);
                 if(count == -1)
                     printf("write error with code %d", errno);
-            fs.write(readbuffer, BUFSIZ);
+            //fs.write(readbuffer, BUFSIZ);
         }
         printf("%d, ", n);
     };
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for(int i=0; i<100; ++i){
+    for(int i=0; i<thread_number; ++i){
         std::thread t{[i](){
             func(i);
         }};
@@ -61,7 +65,7 @@ int main(int argv, char *argc[]){
         std::chrono::duration<double, std::milli> tms = t2 - t1;
     std::cout << "finished in " << tms.count() << " ms" << std::endl;
 
-    system("rm -f test/result.txt");
+    //system("rm -f result.txt");
     fs.close();
     return 0;
 }

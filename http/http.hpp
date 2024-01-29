@@ -8,6 +8,7 @@
 #include <cstring>
 
 #include "httpparse.hpp"
+#include "httpresponse.hpp"
 
 namespace vastina{
 
@@ -37,7 +38,7 @@ void http::getreponse_test(const char* readbuf, char *buf){
         std::regex request_regex(R"((\w+) (\S+) (\S+))");
         std::smatch match2;
         if (std::regex_match(*re, match2, request_regex) ) {
-            if((match2[1]=="GET" && match2[2]=="/")){
+            if((match2[1]=="GET" /*&& match2[2]=="/"*/)){
                 //if(match2[1]=="GET" && match2[2]=="/")
                 //  strcpy(path, "http/response.txt");
                 //lse printf("fuck you\n");
@@ -56,6 +57,18 @@ void http::getreponse_test(const char* readbuf, char *buf){
     else{printf("fuck you too\n");}
 
 }
+
+class _http{
+private:
+    int fd;
+
+
+    vastina::httpparser parser;
+    vastina::httpresponse response;
+public:
+    _http();
+
+};
 
 }
 

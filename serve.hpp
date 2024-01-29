@@ -11,35 +11,36 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <queue>
 
 #include "tools.h"
 #include "log/loger.hpp"
 #include "http/http.hpp"
 #include "buffer/buffer.hpp"
 #include "epoll/epoll.hpp"
+#include "epoll/listener.hpp"
 
 class server{
 private:
     int serversock;
 
-    Epoll *ep;
+    vastina::Epoll *ep;
 
     char readbuffer[BUFSIZE], sendbuffer[BUFSIZE] ; 
     //Buffer *buffer;
     //to be finished as a class or struct
+    //vastina::Listener *listener;
 
     std::unordered_map<int, vastina::http*> clients;
 
 public:
     server(size_t _maxevents = 50) :
         clients{ } {
-        ep = new Epoll(_maxevents);
+        ep = new vastina::Epoll(_maxevents);
         //buffer = new Buffer(); 
         }
     ~server(){
         //close(serversock);
-        for(auto &client:clients){ delete client.second; }
-        delete ep;
     }
     void init();
     void setsock(int af,int type,int protocol, short port = 1453);
@@ -76,10 +77,10 @@ void server::init(){
 }
 
 void server::run(){
-    struct sockaddr_in clnt_addr;
-    socklen_t addr_sz = sizeof(clnt_addr) ;
+    bool flag = true;
+    std::cout <<"Enter q to quit\n";
 
-    while (true)
+    while (flag)
     {
         int event_cnt = ep->Epoll_wait();
         if(event_cnt == -1)
@@ -88,35 +89,50 @@ void server::run(){
         }
         for(auto i=0; i<event_cnt; ++i)
         {
-            if(ep->getfd(i)==serversock)
+            if(ep->getevent(i) & EPOLLIN) //ep->getfd(i) == serversock
             {
-                int clntsock = accept(serversock, (sockaddr*)&clnt_addr, &addr_sz);
-                ep->epoll_add(clntsock);
-
-                if(!clients[clntsock]) clients[clntsock] = new vastina::http();
-                //std::cout <<"connceted: "<< clntsock <<'\n' ;
-            }
-            else
-            {
-                int str_len = read(ep->getfd(i), readbuffer, sizeof(readbuffer));
-
-                if(str_len == 0)
-                {
-                    ep->epoll_del(i);
+                if(ep->getfd(i) == STDIN_FILENO){
+                    std::string input{""};
+                    std::getline(std::cin, input);
+                    if(input == "q") flag = false;
                 }
+
+                else if(ep->getfd(i) == serversock)
+                {
+                    int clntsock = accept(serversock, nullptr, nullptr);
+                    ep->epoll_add(clntsock);
+                    if(!clients[clntsock]) clients[clntsock] = new vastina::http();
+                } 
                 else
                 {
-                    int sock = ep->getfd(i);
-                    clients[sock]->getreponse_test(readbuffer, sendbuffer);
-                    write(sock, sendbuffer, sizeof(sendbuffer));
+                    int str_len = read(ep->getfd(i), readbuffer, sizeof(readbuffer));
+                    if(str_len == 0)
+                    {
+                        //std::cout << "closed: " << ep->getfd(i) << '\n';
+                        ep->epoll_del(i);
+                    }
+                    else
+                    {
+                        int sock = ep->getfd(i);
+                        clients[sock]->getreponse_test(readbuffer, sendbuffer);
+                        write(sock, sendbuffer, sizeof(sendbuffer));
+                    }
                 }
             }
+            if(ep->getevent(i) & EPOLLHUP)
+            {
+                int sock = ep->getfd(i);
+                delete clients[sock];
+            }
+
         }
     }
 }
 
 void server::end(){
     close(serversock);
+    for(auto &client:clients){ delete client.second; }
+    delete ep;
 }
 
 

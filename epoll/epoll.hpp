@@ -6,6 +6,9 @@
 #include <sys/unistd.h>
 #include <fcntl.h>
 #include <iostream>
+#include <queue>
+
+namespace vastina{
 
 class Epoll
 {
@@ -21,9 +24,12 @@ public:
 
     void init(int serversock);
     int Epoll_wait();
+    uint32_t getevent(int index);
     void epoll_add(int fd);
     void epoll_del(int index);
     int getfd(int index);
+
+    bool stdincheck(int index);
 };
 
 Epoll::Epoll(size_t _maxevents = 50):
@@ -39,6 +45,10 @@ Epoll::~Epoll(){
 
 
 void Epoll::init(int serversock){
+    event.events = EPOLLIN;
+    event.data.fd = STDIN_FILENO;
+    epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
+
     event.data.fd = serversock;
     event.events = EPOLLIN | EPOLLET;
     epoll_ctl(epfd, EPOLL_CTL_ADD, serversock, &event);
@@ -46,6 +56,10 @@ void Epoll::init(int serversock){
 
 int Epoll::Epoll_wait(){
     return epoll_wait(epfd, ep_events, maxevents, timeMs);
+}
+
+uint32_t Epoll::getevent(int index){
+    return ep_events[index].events;
 }
 
 void Epoll::epoll_add(int fd){
@@ -66,5 +80,17 @@ void Epoll::epoll_del(int index){
 int Epoll::getfd(int index){
     return ep_events[index].data.fd;
 }
+
+bool Epoll::stdincheck(int index){
+    if(STDIN_FILENO == ep_events[index].data.fd){
+        std::string input{""};
+        std::getline(std::cin, input);
+        if(input == "q") return true;
+    }   return false;
+}
+
+}
+
+
 
 #endif

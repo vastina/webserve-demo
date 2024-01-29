@@ -3,7 +3,7 @@ Date: Thu, 20 Jan 2022 12:00:00 GMT
 Server: MyCustomServer/1.0
 Content-Type: text/html; charset=utf-8
 Content-Length: 1000
-Connection: keep-alive
+Connection: close
 
 <!DOCTYPE html>
 <html>
