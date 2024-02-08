@@ -2,7 +2,6 @@
 #define _BUFFER_H_
 
 #include <iostream>
-//#include <format>
 #include <cstring>
 #include <string.h>
 #include <fstream>

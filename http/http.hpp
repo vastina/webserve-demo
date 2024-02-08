@@ -24,9 +24,15 @@ public:
     http(int _fd): fd{_fd}, parser{}, response{} {};
 
     bool connection_check();
+    void reset();
     void getreponse_test(const char* readbuf, char *buf);
 
 };
+
+void http::reset(){
+    response.reset();
+    parser.reset();
+}
 
 void http::getreponse_test(const char* readbuf, char *buf){
     parser.autoparse(readbuf);
@@ -41,8 +47,10 @@ bool http::connection_check(){
         return false;
     } 
     else if(std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::system_clock::now() - clock.start).count() > 20)
-        return true;
+        std::chrono::system_clock::now() - clock.start).count() > 10){
+            std::cout << "connection timeout" << '\n';
+            return true;
+    }
     return false;
 }
 

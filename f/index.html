@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>???</title>
+    <style>
+        html { color-scheme: light dark; }
+        body { width: 35em; margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif; }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+
+    <div>
+        <button type="button" id="customButton" onclick="connection_test()">Click Me!</button>
+        <script>
+        function connection_test()
+        {           
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://127.0.0.1:7895/test', true);
+            xhr.send();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 202) {
+                    console.log('请求成功');
+                    alert("请求成功" + xhr.responseText);
+                } else {
+                    console.log('请求失败，状态码：' + xhr.status);
+                }
+            }};
+        }
+        </script>
+    </div>
+    
+    <div>
+        <script>
+        function displayDate()
+        {
+            document.getElementById("datetest").innerHTML=Date();
+        }
+        </script>
+        <h2>date test</h2>
+        <p id="datetest">press the button below</p>
+        <button type="button" onclick="displayDate()">show date</button>
+    </div>
+
+    <div>
+        <p>another page: <a href="page2/index.html">Click here</a></p>
+    </div>
+
+</body>
+</html>
+

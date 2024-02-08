@@ -10,11 +10,13 @@
 #include "../tools.h"
 #include "../log/loger.hpp"
 
+namespace vastina{
+
 enum importance{
-        maintk=1,
-        common,
-        lowest 
-    };
+    maintk=1,
+    common,
+    lowest 
+};
 
 class Taskpool{
 private:
@@ -106,5 +108,9 @@ void Taskpool::setstoped(){
         common.stop = true;
     }
 }
+
+}
+
+
 
 #endif

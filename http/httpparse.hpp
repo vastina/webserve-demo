@@ -32,6 +32,9 @@ public:
     httpparser(): results{} {};
     ~httpparser(){};
     void autoparse(const char* buf);
+    void autoparse(std::string& buf);
+    void reset();
+
     std::string operator[](std::string str);
     std::string operator[](std::string& str);
 
@@ -39,6 +42,10 @@ public:
     std::string getPath();
     std::string getProtocol();
 };
+
+void httpparser::reset(){
+    results.clear();
+}
 
 std::string httpparser::getMethod() { return results["method"]; }
 std::string httpparser::getPath() { return results["path"]; }

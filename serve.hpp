@@ -66,7 +66,7 @@ void server::setsock(int af,int type,int protocol, short port){
     {
         printf("bind fail, error code: %d\n", errno);
     }
-    if(listen(serversock, 20) == -1)
+    if(::listen(serversock, 100) == -1)
     {
         printf("listen fail, error code: %d\n", errno);
     }
@@ -81,7 +81,8 @@ void server::init(){
 
 void server::closeFD(int fd){
     ep->epoll_del(fd);
-    delete clients[fd];
+    close(fd);
+    //delete clients[fd];
     clients.erase(fd);
 }
 
@@ -89,6 +90,8 @@ void server::closeFD(int fd){
 void server::run(){
 
     std::cout <<"Enter q to quit\n";
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
 
     while (stopflag)
     {
@@ -101,35 +104,36 @@ void server::run(){
         {
             if(ep->getevent(i) & EPOLLIN)
             {
-                if(ep->getfd(i) == STDIN_FILENO)
-                {
-                    std::string input{""};
-                    std::getline(std::cin, input);
-                    if(input == "q") stopflag = false;
-                    std::cout << "input: " << input << '\n';
-                    //to do: notify other threads, or after break
-                } 
-
                 if(ep->getfd(i) == serversock)
                 {
-                    int clntsock = accept(serversock, nullptr, nullptr);
+                    int clntsock = accept(serversock, (struct sockaddr *)&addr, &len);
                     ep->epoll_add(clntsock);
                     if(!clients[clntsock]) clients[clntsock] = new vastina::http();
+                    //else clients[clntsock]->reset(); todo
                 } 
                 else
                 {
                     int str_len = read(ep->getfd(i), readbuffer, sizeof(readbuffer));
                     if(str_len == 0)
                     {
+                        static int count = 0;
+                        printf("count: %d, fd: %d\n", ++count, ep->getfd(i));
+
                         int sock = ep->getfd(i);
-                        if(clients[sock]->connection_check())
+                        //if(clients[sock]->connection_check())
                             closeFD(sock);
                     }
                     else
                     {
                         int sock = ep->getfd(i);
+
+                        auto t1 = std::chrono::system_clock::now();
+
                         clients[sock]->getreponse_test(readbuffer, sendbuffer);
                         write(sock, sendbuffer, sizeof(sendbuffer));
+
+                        auto t2 = std::chrono::system_clock::now();
+                        std::cout << "cost time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << " microseconds\n";
                     }
                 }
             }
@@ -140,6 +144,7 @@ void server::run(){
             }
 
         }
+        //stopflag = ep->stdincheck();
     }
 }
 

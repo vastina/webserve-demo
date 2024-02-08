@@ -18,6 +18,10 @@ private:
     int epfd;
     size_t maxevents;
     const static int timeMs = -1;
+    // struct _stdincheck{
+    //     epoll_event event;
+    //     int epstdin;
+    // } stdinchecker;
 public:
     Epoll(size_t _maxevents);
     ~Epoll();
@@ -29,12 +33,13 @@ public:
     void epoll_del(int index);
     int getfd(int index);
 
-    bool stdincheck(int index);
+    //bool stdincheck();
 };
 
 Epoll::Epoll(size_t _maxevents = 50):
     epfd{epoll_create(_maxevents)},  
-    maxevents{_maxevents} {
+    maxevents{_maxevents}/*,
+    stdinchecker{epoll_event{EPOLLIN|EPOLLET, STDIN_FILENO},  epoll_create(1)}*/ {
     ep_events = new epoll_event[_maxevents];
 }
 
@@ -43,11 +48,16 @@ Epoll::~Epoll(){
     delete []ep_events;
 }
 
+// bool Epoll::stdincheck(){
+//     if(epoll_wait(stdinchecker.epstdin, &stdinchecker.event, 1, timeMs)){
+//         std::string input{" "};
+//         std::getline(std::cin, input);
+//         if(input[0] == 'q') return false;
+//     }   return true;
+// }
 
 void Epoll::init(int serversock){
-    // event.events = EPOLLIN;
-    // event.data.fd = STDIN_FILENO;
-    // epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
+    //epoll_ctl(stdinchecker.epstdin, EPOLL_CTL_ADD, STDIN_FILENO, &stdinchecker.event);
 
     event.data.fd = serversock;
     event.events = EPOLLIN | EPOLLET;
@@ -71,23 +81,15 @@ void Epoll::epoll_add(int fd){
     epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
 }
 
-void Epoll::epoll_del(int index){
-    //std::cout << ep_events[index].data.fd <<" closed\n";
-    epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[index].data.fd, nullptr);
-    close(ep_events[index].data.fd);
+void Epoll::epoll_del(int fd){
+    event = {0};
+
+    epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &event);
 }
 
 int Epoll::getfd(int index){
     return ep_events[index].data.fd;
 }
-
-// bool Epoll::stdincheck(int index){
-//     if(STDIN_FILENO == ep_events[index].data.fd){
-//         std::string input{""};
-//         std::getline(std::cin, input);
-//         if(input == "q") return true;
-//     }   return false;
-// } there's some problem
 
 }
 

@@ -1,0 +1,39 @@
+<script>
+        document.getElementById("customButton").addEventListener("click", function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://localhost:7895/custom", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.status == 200) {//xhr.readyState == 4 && 
+                    alert("Custom button clicked! Response: " + xhr.responseText);
+                }
+            };
+            xhr.send();
+        });
+    </script>
+
+GET /custom HTTP/1.1
+Host: localhost:7895
+Connection: keep-alive
+sec-ch-ua: "Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"
+sec-ch-ua-mobile: ?0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+sec-ch-ua-platform: "Windows"
+Accept: */*
+Origin: http://127.0.0.1:7895
+Sec-Fetch-Site: cross-site
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://127.0.0.1:7895/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9
+
+igate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9
+Cookie: gpadminpassport=cm9vdHw1MzMxZWRhZTdiNmY3YTViNTM4NzQ1NTM5M2NkNWZmZg==
+
+hZTdiNmY3YTViNTM4NzQ1NTM5M2NkNWZmZg==
+
+<a href="http://nginx.org/">nginx.org</a>
