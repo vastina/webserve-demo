@@ -19,6 +19,8 @@
 #include "epoll/epoll.hpp"
 #include "pool/ThreadPool.hpp"
 
+//加了namespace vastina之后，所有线程大部分时间都会一直卡在epoll_wait
+//往threadpool里面加入新任务之后也不起任何作用
 
 class server{
 private:

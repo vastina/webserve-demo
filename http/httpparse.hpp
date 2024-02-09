@@ -132,7 +132,7 @@ std::string httpparser::format_key(std::string &str){
     if(str[0] >= 'A' && str[0] <= 'Z'){
         str[0] = str[0] - 'A' + 'a';
     }
-    int position = 0;
+    unsigned long position = 0;
     while((position = str.find("-", position)) != std::string::npos){
         if(str[position + 1] >= 'A' && str[position + 1] <= 'Z'){
             str[position + 1] = str[position + 1] - 'A' + 'a';
