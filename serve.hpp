@@ -13,7 +13,6 @@
 #include <fcntl.h>
 #include <queue>
 
-#include "tools.h"
 #include "log/loger.hpp"
 #include "http/http.hpp"
 #include "buffer/buffer.hpp"
@@ -27,7 +26,7 @@ private:
 
     vastina::Epoll *ep;
 
-    char readbuffer[BUFSIZE], sendbuffer[BUFSIZE] ; 
+    char readbuffer[BUFSIZ], sendbuffer[BUFSIZ] ; 
     //Buffer *buffer;
     //to be finished as a class or struct
     bool stopflag;
