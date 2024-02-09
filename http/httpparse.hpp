@@ -41,6 +41,7 @@ public:
     std::string getMethod();
     std::string getPath();
     std::string getProtocol();
+    std::string getBody();
 };
 
 void httpparser::reset(){
@@ -50,7 +51,7 @@ void httpparser::reset(){
 std::string httpparser::getMethod() { return results["method"]; }
 std::string httpparser::getPath() { return results["path"]; }
 std::string httpparser::getProtocol() { return results["version"]; }
-
+std::string httpparser::getBody() { return results["body"]; }
 
 void httpparser::autoparse(const char* buf){
     std::istringstream buf_stream(buf);
@@ -111,6 +112,10 @@ void httpparser::autoparse(const char* buf){
         }
     }
     results.insert(std::make_pair("body", body_string));
+}
+
+void httpparser::autoparse(std::string& buf){
+    autoparse(buf.c_str());
 }
 
 std::string httpparser::operator[](std::string str){

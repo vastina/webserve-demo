@@ -135,13 +135,12 @@ bool cachetree::static_file_exist(const std::string& str) {
 // }
 
 void cachetree::init_read(const fs::path& directory, const fs::path& relativePath) {
-    for (const auto& entry : fs::directory_iterator(directory)) {
-        if (entry.is_directory()) {
-            fs::path newRelativePath = relativePath / entry.path().filename();
-            init_read(entry.path(), newRelativePath);  
-        } else if (entry.is_regular_file()) {
-            static_files.insert((relativePath / entry.path().filename()).string()); 
-        }
+    const std::string directoryPath = "/home/net/webserve-demo/f";
+    fs::path absDirectoryPath = fs::absolute(directoryPath);
+
+    for (const auto& entry : fs::recursive_directory_iterator(absDirectoryPath)) {
+        fs::path relativePath = fs::relative(entry.path(), absDirectoryPath);
+        static_files.insert(relativePath.string());
     }
 }
 
@@ -171,6 +170,14 @@ void justfortest(std::string *response, int code, size_t length = 2000){
     response->append("\r\n");
 }
 
+void writefile(char *buf, int count, std::string filename){
+    std::ifstream infile;
+    infile.open(filename, std::ifstream::in);
+    infile.read(buf+count, BUFSIZ-count);
+    infile.close();
+}
+
+
 void httpresponse::makereponse_test(httpparser& parser, char *buf){
 std::cout << parser.getMethod() <<'\n';
 std::cout << parser.getPath() <<'\n';
@@ -186,12 +193,8 @@ std::cout << parser.getProtocol() <<'\n';
             if(cachetree::getInstance().static_file_exist(std::move("index.html"))){
                 justfortest(response, STATUS_CODE::OK);
                 strcpy(buf, response->c_str());
-                int count = response->size();
 
-                std::ifstream infile;
-                infile.open("index.html", std::ifstream::in);
-                infile.read(buf+count, BUFSIZ-count);
-                infile.close();
+                writefile(buf, response->size() , "index.html");
             } 
         }
 
@@ -200,6 +203,14 @@ std::cout << parser.getProtocol() <<'\n';
             justfortest(response, STATUS_CODE::ACCEPTED, body.length());
             response->append(body);
             strcpy(buf, response->c_str());
+        }
+
+        else if(parser.getPath()=="/login?text=vastina"){
+            justfortest(response, STATUS_CODE::OK);
+            strcpy(buf, response->c_str());
+
+            if(cachetree::getInstance().static_file_exist(std::move("page2/gettest.html")))
+                writefile(buf, response->size() , "page2/gettest.html");
         }
 
         else if(parser.getPath()=="/favicon.ico"){
@@ -223,41 +234,33 @@ std::cout << parser.getProtocol() <<'\n';
         else if(cachetree::getInstance().static_file_exist(parser.getPath().substr(1))){
             justfortest(response, STATUS_CODE::OK);
             strcpy(buf, response->c_str());
-            int count = response->size();
 
-            std::ifstream infile;
-            infile.open(parser.getPath().substr(1), std::ifstream::in);
-            infile.read(buf+count, BUFSIZ-count);
-            infile.close();
+            writefile(buf, response->size() , parser.getPath().substr(1).c_str());
         }
     
         else if(cachetree::getInstance().static_file_exist("404.html")){
             justfortest(response, STATUS_CODE::NOT_FOUND);
             strcpy(buf, response->c_str());
-            int count = response->size();
 
-            std::ifstream infile;
-            infile.open("404.html", std::ifstream::in);
-            infile.read(buf+count, BUFSIZ-count);
-            infile.close();
+            writefile(buf, response->size() , "404.html");
         }
 
     }
 
+    else if(parser.getMethod()=="POST"){}
+
     else if(parser.getProtocol()!="HTTP/1.1"){
         justfortest(response, STATUS_CODE::HTTP_VERSION_NOT_SUPPORTED);
         strcpy(buf, response->c_str());
-        int count = response->size();
 
-        std::ifstream infile;
-        infile.open("505.html", std::ifstream::in);
-        infile.read(buf+count, BUFSIZ-count);
-        infile.close();
+        writefile(buf, response->size() , "505.html");
     }
 
     else{
         justfortest(response, STATUS_CODE::BAD_REQUEST, 0);
         strcpy(buf, response->c_str());
+
+        writefile(buf, response->size() , "502.html");
     }
 
     delete response;

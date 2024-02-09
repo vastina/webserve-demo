@@ -7,8 +7,6 @@
         body { width: 35em; margin: 0 auto;
         font-family: Tahoma, Verdana, Arial, sans-serif; }
     </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>?</title>
 </head>
 <body>
@@ -20,7 +18,7 @@
         function connection_test()
         {           
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'http://127.0.0.1:7895/test', true);
+            xhr.open('GET', 'http://127.0.0.1:6780/test', true);
             xhr.send();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -49,6 +47,19 @@
 
     <div>
         <p>another page: <a href="page2/index.html">Click here</a></p>
+    </div>
+
+    <div>
+        <h2>GET Test</h2>
+            <form method="GET" action="/login">
+            <input type="text" name="text" size="31">
+            <input type="submit" value="GET">
+        </form>
+        <h2>POST Test</h2>
+            <form method="POST" action="/login">
+            <input type="text" name="text" size="31">
+            <input type="submit" value="POST">
+        </form>
     </div>
 
 </body>

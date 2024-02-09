@@ -18,7 +18,8 @@
 #include "http/http.hpp"
 #include "buffer/buffer.hpp"
 #include "epoll/epoll.hpp"
-#include "epoll/listener.hpp"
+#include "pool/ThreadPool.hpp"
+
 
 class server{
 private:
@@ -32,10 +33,12 @@ private:
     bool stopflag;
 
     std::unordered_map<int, vastina::http*> clients;
-
+    
+    ThreadPool pool;
 public:
     server(size_t _maxevents = 50) :
-        clients{ } {
+        clients{ },
+        pool{ThreadPool(4)} {
         ep = new vastina::Epoll(_maxevents);
         //buffer = new Buffer(); 
         }
@@ -108,33 +111,49 @@ void server::run(){
                 {
                     int clntsock = accept(serversock, (struct sockaddr *)&addr, &len);
                     ep->epoll_add(clntsock);
-                    if(!clients[clntsock]) clients[clntsock] = new vastina::http();
+                    if(!clients[clntsock]) clients[clntsock] = new vastina::http(clntsock);
                     //else clients[clntsock]->reset(); todo
+                    std::cout << "fd: "<< clntsock << '\n';
+                    pool.enqueue([this, clntsock](){
+                        clients[clntsock]->process();
+                    });
                 } 
                 else
                 {
-                    int str_len = read(ep->getfd(i), readbuffer, sizeof(readbuffer));
-                    if(str_len == 0)
+                    int clntsock = ep->getfd(i);
+                    int callback = clients[clntsock]->getcallback();
+std::cout << "fd: "<< clntsock << " callback: " << callback << '\n';
+                    if(callback == vastina::http::STATE::NORMAL_END)
                     {
-                        static int count = 0;
-                        printf("count: %d, fd: %d\n", ++count, ep->getfd(i));
-
-                        int sock = ep->getfd(i);
-                        //if(clients[sock]->connection_check())
-                            closeFD(sock);
+                        closeFD(clntsock);
                     }
-                    else
+                    else if(callback == vastina::http::STATE::ERROR_END)
                     {
-                        int sock = ep->getfd(i);
-
-                        auto t1 = std::chrono::system_clock::now();
-
-                        clients[sock]->getreponse_test(readbuffer, sendbuffer);
-                        write(sock, sendbuffer, sizeof(sendbuffer));
-
-                        auto t2 = std::chrono::system_clock::now();
-                        std::cout << "cost time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << " microseconds\n";
+                        closeFD(clntsock);
+                        //todo:log it
                     }
+                    // int str_len = read(ep->getfd(i), readbuffer, sizeof(readbuffer));
+                    // if(str_len == 0)
+                    // {
+                    //     static int count = 0;
+                    //     printf("count: %d, fd: %d\n", ++count, ep->getfd(i));
+
+                    //     int sock = ep->getfd(i);
+                    //     //if(clients[sock]->connection_check())
+                    //         closeFD(sock);
+                    // }
+                    // else
+                    // {
+                    //     int sock = ep->getfd(i);
+
+                    //     auto t1 = std::chrono::system_clock::now();
+
+                    //     clients[sock]->getreponse_test(readbuffer, sendbuffer);
+                    //     write(sock, sendbuffer, sizeof(sendbuffer));
+
+                    //     auto t2 = std::chrono::system_clock::now();
+                    //     std::cout << "cost time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << " microseconds\n";
+                    // }
                 }
             }
             if(ep->getevent(i) & EPOLLHUP)
