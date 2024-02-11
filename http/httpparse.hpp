@@ -160,6 +160,8 @@ void httpparser::parseversion(const std::string &tmp) {
 void httpparser::autoparse(const char *buf) {
 auto t1 = std::chrono::high_resolution_clock::now();
 
+auto t1 = std::chrono::high_resolution_clock::now();
+
 	std::istringstream buf_stream(buf);
 	int part = 0;
 	std::string line;

@@ -12,11 +12,9 @@
 
 constexpr enum STATUS_CODE {
 	CONTINUE = 100,
-	SWITCHING_PROTOCOLS // 101 switching_protocols
-	,
+	SWITCHING_PROTOCOLS, // 101 switching_protocols
 	PROCESSING,
-	OK = 200 // 200 ok
-	,
+	OK = 200, // 200 ok
 	CREATED,
 	ACCEPTED,
 	NON_AUTHORITATIVE_INFORMATION,
@@ -164,7 +162,7 @@ class httpresponse {
 
 void httpresponse::reset() {}
 
-void justfortest(std::string *response, int code, size_t length = 2000) {
+void justfortest(std::string *response, int code, bool connection = false, size_t length = 2000) {
 	response->append("HTTP/1.1 ").append(STATUS_STR.at(code));
 	response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
 	response->append("Server: localhost:7895\r\n");
@@ -173,7 +171,8 @@ void justfortest(std::string *response, int code, size_t length = 2000) {
 		.append("\r\n");
 	;
 	response->append("Content-Type: text/html charset=utf-8\r\n");
-	response->append("Connection: keep-alive\r\n");
+	if(connection) response->append("Connection: keep-alive\r\n");
+	else response->append("Connection: close\r\n");
 	response->append("\r\n");
 }
 
@@ -274,7 +273,7 @@ void httpresponse::makereponse_test(httpparser &parser, char *buf) {
 	}
 
 	else {
-		justfortest(response, STATUS_CODE::BAD_REQUEST, 0);
+		justfortest(response, STATUS_CODE::BAD_REQUEST, false, 0);
 		strcpy(buf, response->c_str());
 
 		writefile(buf, response->size(), "502.html");

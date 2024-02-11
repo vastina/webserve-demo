@@ -66,7 +66,7 @@ while (!tasks.empty()) {
 	}
 	task();
 }
-} // namespace vastina
+} 
 // print("(commonfuture: {})\n",common._future.get());
 }
 ;
