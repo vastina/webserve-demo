@@ -53,7 +53,7 @@ enum STATUS_CODE {
 	HTTP_VERSION_NOT_SUPPORTED      // 505 http_version_not_supported
 };
 
-std::unordered_map<int, const std::string_view> const STATUS_STR = {
+const static std::unordered_map<int, const std::string_view> STATUS_STR = {
 	{100, "100 Continue\r\n"},
 	{101, "101 Switching Protocols\r\n"},
 	{102, "102 Processing\r\n"},
@@ -113,7 +113,7 @@ enum CONTENT_TYPE {
 	OTHER
 };
 
-const std::unordered_map<int, const std::string_view> CONTENNT_TYPE_STR = {
+const static std::unordered_map<int, const std::string_view> CONTENNT_TYPE_STR = {
 	{PURETEST, "text/plain"},
 	{TEXT, "text/html"},
 	{ICON, "image/x-icon"},
@@ -144,7 +144,7 @@ enum METHOD {
 
 enum CONNECTION { NO_CONNECTION , KEEP_ALIVE , CLOSE };
 
-const std::unordered_map<int, const std::string_view> CONNECTION_STR = {
+const static std::unordered_map<int, const std::string_view> CONNECTION_STR = {
     {KEEP_ALIVE, "Connection: keep-alive\r\n"},
     {CLOSE, "Connection: close\r\n"}
 };

@@ -10,7 +10,11 @@
 #include <sys/socket.h>
 #include <sys/unistd.h>
 
+namespace vastina {
+
 class Buffer {
 };
+
+} // namespace vastina
 
 #endif
