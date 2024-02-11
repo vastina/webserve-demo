@@ -7,7 +7,13 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <future>
+#include <memory>
+#include <mutex>
+#include <queue>
 #include <stdexcept>
+#include <thread>
+#include <vector>
 #include <thread>
 #include <vector>
 
