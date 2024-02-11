@@ -197,7 +197,7 @@ void httpresponse::makereponse_test(httpparser &parser, char *buf) {
 	response->reserve(200);
 	bzero(buf, BUFSIZ);
 
-	if (parser.getMethod() == "GET" && parser.getProtocol() == "HTTP/1.1") {
+	if (parser.getMethod() == GET && parser.getProtocol() == HTTP_11) {
 
 		if (parser.getPath() == "/") {
 			if (cachetree::getInstance().static_file_exist(
@@ -263,10 +263,10 @@ void httpresponse::makereponse_test(httpparser &parser, char *buf) {
 
 	}
 
-	else if (parser.getMethod() == "POST") {
+	else if (parser.getMethod() == POST) {
 	}
 
-	else if (parser.getProtocol() != "HTTP/1.1") {
+	else if (parser.getProtocol() != HTTP_11) {
 		justfortest(response, STATUS_CODE::HTTP_VERSION_NOT_SUPPORTED);
 		strcpy(buf, response->c_str());
 

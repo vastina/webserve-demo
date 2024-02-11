@@ -9,30 +9,30 @@
 #include <chrono>
 
 constexpr enum VERSION{
-	 HTTP_09
+	 HTTP_09 = 9
 	,HTTP_10
 	,HTTP_11	
 };
 
 constexpr enum METHOD{
-     GET = 0
-    ,POST
-    ,DELETE
-    ,PUT
-    ,HEAD
-    ,TRACE
-    ,CONNECT
-    ,OPTIONS
-    ,PATCH
+     GET = 1<<0
+    ,POST = 1<<1
+    ,DELETE = 1<<2
+    ,PUT = 1<<3
+    ,HEAD = 1<<4
+    ,TRACE = 1<<5
+    ,CONNECT = 1<<6
+    ,OPTIONS = 1<<7
+    ,PATCH = 1<<8
 };
 
 constexpr enum CONNECTION{
-	 KEEP_ALIVE
+	 KEEP_ALIVE = 0
 	,CLOSE
 };
 
 constexpr enum TRANSFER_ENCODING{
-	CHUNKED
+	 CHUNKED
 	,COMPRESS
 	,DEFLATE
 	,GZIP
@@ -70,66 +70,123 @@ namespace vastina {
 class httpparser {
 
   private:
-	// int state;
-	std::map<std::string, std::string> results;
-	std::string format_key(std::string &str);
+  	METHOD method;
+	VERSION version;
+	CONNECTION connection;
+	std::string path;
+	std::string body;
 
+	std::map<std::string, std::string> headers;
+
+	std::string format_key(std::string &str);
   public:
-	httpparser() : results{} {};
+	httpparser() : headers{} {};
 	~httpparser(){};
 	void autoparse(const char *buf);
 	void autoparse(std::string &buf);
+	void parsemethod(const std::string &buf);
+	void parseversion(const std::string &buf);
+
 	void reset();
 
 	std::string operator[](std::string str);
 	std::string operator[](std::string &str);
 
-	std::string getMethod();
-	std::string getPath();
-	std::string getProtocol();
+	METHOD getMethod();
+	const std::string& getPath();
+	VERSION getProtocol();
 	std::string getBody();
 };
 
-void httpparser::reset() { results.clear(); }
+void httpparser::reset() { headers.clear(); }
 
-std::string httpparser::getMethod() { return results["method"]; }
-std::string httpparser::getPath() { return results["path"]; }
-std::string httpparser::getProtocol() { return results["version"]; }
-std::string httpparser::getBody() { return results["body"]; }
+METHOD httpparser::getMethod() { return method; }
+const std::string& httpparser::getPath() { return path; }
+VERSION httpparser::getProtocol() { return version; }
+std::string httpparser::getBody() { return body; }
+
+void httpparser::parsemethod(const std::string &tmp) {
+	switch (tmp[0])
+	{
+	case 'G':
+		if(tmp[1] == 'E' && tmp[2] == 'T')
+			method = GET;
+		break;
+	case 'P':
+		switch (tmp[1])
+		{
+		case 'O':
+			if(tmp[2] == 'S' && tmp[3] == 'T')
+				method = POST;
+			break;
+		case 'U':
+			if(tmp[2] == 'T')
+				method = PUT;
+			break;
+		case 'A':
+			if(tmp[2] == 'T' && tmp[3] == 'C' && tmp[4] == 'H')
+				method = PATCH;
+			break;
+		default:
+			break;
+		}
+		break;
+	case 'D':
+		if(tmp[1] == 'E' && tmp[2] == 'L' && tmp[3] == 'E' && tmp[4] == 'T' && tmp[5] == 'E')
+			method = DELETE;
+		break;
+	case 'H':
+		if(tmp[1] == 'E' && tmp[2] == 'A' && tmp[3] == 'D')
+			method = HEAD;
+		break;
+	case 'T':
+		if(tmp[1] == 'R' && tmp[2] == 'A' && tmp[3] == 'C' && tmp[4] == 'E')
+			method = TRACE;
+		break;
+	default:
+		break;
+	}
+}
+
+void httpparser::parseversion(const std::string &tmp) {
+	if(tmp == "HTTP/1.1")
+		version = HTTP_11;
+	else if(tmp == "HTTP/1.0")
+		version = HTTP_10;
+	else if(tmp == "HTTP/0.9")
+		version = HTTP_09;
+}
 
 void httpparser::autoparse(const char *buf) {
 auto t1 = std::chrono::high_resolution_clock::now();
 
 	std::istringstream buf_stream(buf);
-	enum parts { start_line, headers, body };
-	parts part = start_line;
+	int part = 0;
 	std::string line;
-	std::string body_string;
 	while (getline(buf_stream, line)) {
-		switch (part) {
-		case start_line: {
+		switch (part) { // 0: request line, 1: header, 2: body
+		case 0: {
 			std::istringstream line_stream(line);
 			std::string tmp;
 			line_stream >> tmp;
 			if (tmp.find("HTTP") == std::string::npos) {
-				results.insert(std::make_pair("method", tmp));
+				parsemethod(tmp);
+				line_stream >> path;
 				line_stream >> tmp;
-				results.insert(std::make_pair("path", tmp));
-				line_stream >> tmp;
-				results.insert(std::make_pair("version", tmp));
+				parseversion(tmp);
 			} else {
-				results.insert(std::make_pair("version", tmp));
+				headers.insert(std::make_pair("version", tmp));
 				line_stream >> tmp;
-				results.insert(std::make_pair("status", tmp));
+				headers.insert(std::make_pair("status", tmp));
 				line_stream >> tmp;
-				results.insert(std::make_pair("status_text", tmp));
+				headers.insert(std::make_pair("status_text", tmp));
 			}
-			part = headers;
+			part = 1;
 			break;
 		}
-		case headers: {
+		case 1: {
 			if (line.size() == 1) {
-				part = body;
+				part = 2;
 				break;
 			}
 			auto pos = line.find(":");
@@ -137,19 +194,18 @@ auto t1 = std::chrono::high_resolution_clock::now();
 				continue;
 			std::string tmp1(line, 0, pos);
 			std::string tmp2(line, pos + 2);
-			results.insert(std::make_pair(format_key(tmp1), tmp2));
+			headers.insert(std::make_pair(format_key(tmp1), tmp2));
 			break;
 		}
-		case body: {
-			body_string.append(line);
-			body_string.push_back('\n');
+		case 2: {
+			body.append(line);
+			body.push_back('\n');
 			break;
 		}
 		default:
 			break;
 		}
 	}
-	results.insert(std::make_pair("body", body_string));
 
 auto t2 = std::chrono::high_resolution_clock::now();
 std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << '\n';
@@ -158,13 +214,13 @@ std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::microseco
 void httpparser::autoparse(std::string &buf) { autoparse(buf.c_str()); }
 
 std::string httpparser::operator[](std::string str) {
-	auto it = results.find(format_key(str));
-	return it != results.end() ? it->second : "";
+	auto it = headers.find(str);
+	return it != headers.end() ? it->second : "";
 }
 
 std::string httpparser::operator[](std::string &str) {
-	auto it = results.find(format_key(str));
-	return it != results.end() ? it->second : "";
+	auto it = headers.find(str);
+	return it != headers.end() ? it->second : "";
 }
 
 std::string httpparser::format_key(std::string &str) {
