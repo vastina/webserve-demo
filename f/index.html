@@ -12,34 +12,13 @@
 <body>
     <h1>Hello, World!</h1>
 
+    <script src="script/test.js"></script>
+
     <div>
         <button type="button" id="customButton" onclick="connection_test()">Click Me!</button>
-        <script>
-        function connection_test()
-        {           
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'http://47.106.209.255:6780/test', true);
-            xhr.send();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 202) {
-                    console.log('请求成功');
-                    alert("请求成功" + xhr.responseText);
-                } else {
-                    console.log('请求失败，状态码：' + xhr.status);
-                }
-            }};
-        }
-        </script>
     </div>
     
     <div>
-        <script>
-        function displayDate()
-        {
-            document.getElementById("datetest").innerHTML=Date();
-        }
-        </script>
         <h2>date test</h2>
         <p id="datetest">press the button below</p>
         <button type="button" onclick="displayDate()">show date</button>

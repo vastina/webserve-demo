@@ -9,101 +9,7 @@
 #include <string_view>
 
 #include "httpparse.hpp"
-
-constexpr enum STATUS_CODE {
-	CONTINUE = 100,
-	SWITCHING_PROTOCOLS, // 101 switching_protocols
-	PROCESSING,
-	OK = 200, // 200 ok
-	CREATED,
-	ACCEPTED,
-	NON_AUTHORITATIVE_INFORMATION,
-	NO_CONTENT,
-	RESET_CONTENT,
-	PARTIAL_CONTENT,
-	MULTI_STATUS,
-	ALREADY_REPORTED,
-	IM_USED,
-	MULTIPLE_CHOICES = 300,
-	MOVED_PERMANENTLY,
-	FOUND,
-	SEE_OTHER,
-	NOT_MODIFIED,
-	USE_PROXY,
-	TEMPORARY_REDIRECT,
-	BAD_REQUEST = 400,
-	UNAUTHORIZED,
-	PAYMENT_REQUIRED,
-	FORBIDDEN,
-	NOT_FOUND // 404 not_fonud
-	,
-	METHOD_NOT_ALLOWED,
-	NOT_ACCEPTABLE,
-	PROXY_AUTHENTICATION_REQUIRED,
-	REQUEST_TIMEOUT,
-	CONFLICT,
-	GONE,
-	LENGTH_REQUIRED,
-	PRECONDITION_FAILED,
-	REQUEST_ENTITY_TOO_LARGE,
-	REQUEST_URI_TOO_LONG,
-	UNSUPPORTED_MEDIA_TYPE,
-	REQUESTED_RANGE_NOT_SATISFIABLE,
-	EXPECTATION_FAILED,
-	INTERNAL_SERVER_ERROR = 500,
-	NOT_IMPLEMENTED,
-	BAD_GATEWAY,
-	SERVICE_UNAVAILABLE,
-	GATEWAY_TIMEOUT,
-	HTTP_VERSION_NOT_SUPPORTED // 505 http_version_not_supported
-};
-
-const std::unordered_map<int, const std::string_view> STATUS_STR = {
-	{100, "100 Continue\r\n"},
-	{101, "101 Switching Protocols\r\n"},
-	{102, "102 Processing\r\n"},
-	{200, "200 OK\r\n"},
-	{201, "201 Created\r\n"},
-	{202, "202 Accepted\r\n"},
-	{203, "203 Non-Authoritative Information\r\n"},
-	{204, "204 No Content\r\n"},
-	{205, "205 Reset Content\r\n"},
-	{206, "206 Partial Content\r\n"},
-	{207, "207 Multi-Status\r\n"},
-	{208, "208 Already Reported\r\n"},
-	{226, "226 IM Used\r\n"},
-	{300, "300 Multiple Choices\r\n"},
-	{301, "301 Moved Permanently\r\n"},
-	{302, "302 Found\r\n"},
-	{303, "303 See Other\r\n"},
-	{304, "304 Not Modified\r\n"},
-	{305, "305 Use Proxy\r\n"},
-	{307, "307 Temporary Redirect\r\n"},
-	{400, "400 Bad Request\r\n"},
-	{401, "401 Unauthorized\r\n"},
-	{402, "402 Payment Required\r\n"},
-	{403, "403 Forbidden\r\n"},
-	{404, "404 Not Found\r\n"},
-	{405, "405 Method Not Allowed\r\n"},
-	{406, "406 Not Acceptable\r\n"},
-	{407, "407 Proxy Authentication Required\r\n"},
-	{408, "408 Request Timeout\r\n"},
-	{409, "409 Conflict\r\n"},
-	{410, "410 Gone\r\n"},
-	{411, "411 Length Required\r\n"},
-	{412, "412 Precondition Failed\r\n"},
-	{413, "413 Request Entity Too Large\r\n"},
-	{414, "414 Request-URI Too Long\r\n"},
-	{415, "415 Unsupported Media Type\r\n"},
-	{416, "416 Requested Range Not Satisfiable\r\n"},
-	{417, "417 Expectation Failed\r\n"},
-	{500, "500 Internal Server Error\r\n"},
-	{501, "501 Not Implemented\r\n"},
-	{502, "502 Bad Gateway\r\n"},
-	{503, "503 Service Unavailable\r\n"},
-	{504, "504 Gateway Timeout\r\n"},
-	{505, "505 HTTP Version Not Supported\r\n"}
-};
+#include "httpdef.hpp"
 
 namespace vastina {
 
@@ -137,7 +43,7 @@ bool cachetree::static_file_exist(const std::string &str) {
 
 void cachetree::init_read(const fs::path &directory,
 						  const fs::path &relativePath) {
-	const std::string directoryPath = "/home/webserve-demo/f";
+	const std::string directoryPath = "/home/net/webserve-demo/f";
 	fs::path absDirectoryPath = fs::absolute(directoryPath);
 
 	for (const auto &entry :
@@ -147,9 +53,14 @@ void cachetree::init_read(const fs::path &directory,
 	}
 }
 
+constexpr size_t default_header_length = 200;
+constexpr size_t default_body_length = 2000;
+// 随便写的
 class httpresponse {
   private:
-	;
+	std::string filename;
+	CONNECTION connection_type;
+	CONTENT_TYPE content_type;
 
   public:
 	httpresponse(){};
@@ -158,25 +69,12 @@ class httpresponse {
 	void reset();
 	void makereponse_test(httpparser &parser,
 						  char *buf); // no buffer now, so send parser directly
+
+	void autoresponse(httpparser &parser, char *buf);
+	void solverequestline(httpparser &parser);
+	void solvepath(const std::string &str);
+	void addheader(std::string *response, int code, size_t length = default_body_length, CONNECTION connection_type);
 };
-
-void httpresponse::reset() {}
-
-void justfortest(std::string *response, int code, bool connection = false, size_t length = 2000) {
-	response->append("HTTP/1.1 ").append(STATUS_STR.at(code));
-	response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
-	response->append("Server: localhost:7895\r\n");
-	response->append("Content-Length: ")
-		.append(std::to_string(length))
-		.append("\r\n");
-	;
-	response->append("Content-Type: text/html charset=utf-8\r\n");
-	if(connection) response->append("Connection: keep-alive\r\n");
-	else response->append("Connection: close\r\n");
-	response->append("\r\n");
-}
-
-//response of existed requests should be writen into cache to speed up
 
 void writefile(char *buf, int count, std::string filename) {
 	std::ifstream infile;
@@ -185,12 +83,115 @@ void writefile(char *buf, int count, std::string filename) {
 	infile.close();
 }
 
+void httpresponse::solverequestline(httpparser &parser) {
+	switch (parser.getProtocol()) {
+	case HTTP_11:
+		switch (parser.getMethod()) {
+		case GET:
+			solvepath(parser.getPath());
+
+			break;
+		case POST:
+			/* code */
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		//addheader()
+		break;
+	}
+}
+
+void httpresponse::solvepath(const std::string &str) {
+	if (str == "/"){
+		filename = "index.html";
+	}
+	else if (str == "/test"){
+		filename.clear();
+	}
+	else if (str == "/login?text=test") {
+		// todo: parse action?body
+		filename = "page2/gettest.html";
+	} else {
+		filename = str.substr(1);
+		if (!cachetree::getInstance().static_file_exist(filename)) {
+			filename = "404.html";
+		}
+	}
+}
+
+void httpresponse::addheader(std::string *response, int state, size_t length, CONNECTION connection_type) {
+	{//no if part
+		response->append("HTTP/1.1 ").append(STATUS_STR.at(state));
+		response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
+		response->append("Server: localhost:6780\r\n");
+		response->append("Content-Length: ")
+		.append(std::to_string(length))
+		.append("\r\n");
+	}
+	{//???
+		response->append("Content-Type: ")
+			.append(CONTENNT_TYPE_STR.at(content_type))
+			.append("\r\n");
+		response->append(CONNECTION_STR.at(connection_type));
+	}
+	response->append("\r\n");
+}
+
+void httpresponse::autoresponse(httpparser &parser, char *buf) {
+	std::string *response = new std::string("");
+	response->reserve(default_header_length);
+	memset(buf, 0, BUFSIZ);
+
+	switch (parser.getProtocol()) {
+	case HTTP_11:
+		switch (parser.getMethod()) {
+		case GET:
+			solvepath(parser.getPath());
+
+			break;
+		case POST:
+			/* code */
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		addheader(response, STATUS_CODE::HTTP_VERSION_NOT_SUPPORTED);
+		break;
+	}
+}
+
+void httpresponse::reset() {}
+
+void justfortest(std::string *response, int code, bool connection = false,
+				 size_t length = 2000) {
+	response->append("HTTP/1.1 ").append(STATUS_STR.at(code));
+	response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
+	response->append("Server: localhost:7895\r\n");
+	response->append("Content-Length: ")
+		.append(std::to_string(length))
+		.append("\r\n");
+	;
+	response->append("Content-Type: text/html charset=utf-8\r\n");
+	if (connection)
+		response->append("Connection: keep-alive\r\n");
+	else
+		response->append("Connection: close\r\n");
+	response->append("\r\n");
+}
+
+// response of existed requests should be writen into cache to speed up?
+
 void httpresponse::makereponse_test(httpparser &parser, char *buf) {
 
-// var 1, 2, 3...
-// makeresponse(&1, &2, &3...)
-// update_state(1, 2, 3)
-// or they should be the private member of this class
+	// var 1, 2, 3...
+	// makeresponse(&1, &2, &3...)
+	// update_state(1, 2, 3)
+	// or they should be the private member of this class
 
 	std::string *response = new std::string("");
 	response->reserve(200);
@@ -225,23 +226,20 @@ void httpresponse::makereponse_test(httpparser &parser, char *buf) {
 		}
 
 		else if (parser.getPath() == "/favicon.ico") {
-			std::string body{"1145\r\n"
-							 "1419\r\n"
-							 "1981\r\n"
-							 "0258\r\n"};
 			response->append("HTTP/1.1 ")
 				.append(STATUS_STR.at(STATUS_CODE::OK));
 			response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
 			response->append("Server: localhost:7895\r\n");
 			response->append("Content-Length: ")
-				.append(std::to_string(body.length()))
+				.append(std::to_string(default_body_length))
 				.append("\r\n");
 			;
 			response->append("Content-Type: image/x-icon\r\n");
 			response->append("Connection: keep-alive\r\n");
 			response->append("\r\n");
-			response->append(body);
 			strcpy(buf, response->c_str());
+
+			writefile(buf, response->size(), "favicon.ico");
 		}
 
 		else if (cachetree::getInstance().static_file_exist(
