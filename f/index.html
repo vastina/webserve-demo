@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <title>???</title>
     <style>
@@ -7,12 +7,31 @@
         body { width: 35em; margin: 0 auto;
         font-family: Tahoma, Verdana, Arial, sans-serif; }
     </style>
-    <title>?</title>
+    <meta charset="UTF-8">
+    <script src="script/test.js"></script>
 </head>
 <body>
     <h1>Hello, World!</h1>
 
-    <script src="script/test.js"></script>
+    <script>
+        function connection_test(){           
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/test', true);
+            xhr.send();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 202) {
+                    console.log('请求成功');
+                    alert("请求成功" + xhr.responseText);
+                } else {
+                    console.log('请求失败，状态码：' + xhr.status);
+                }
+            }};
+        }
+        function displayDate(){ 
+            document.getElementById("datetest").innerHTML=Date();
+        }
+    </script>
 
     <div>
         <button type="button" id="customButton" onclick="connection_test()">Click Me!</button>

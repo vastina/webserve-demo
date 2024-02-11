@@ -4,11 +4,13 @@
 #include <unordered_map>
 #include <string_view>
 
+namespace vastina {
+
 enum STATUS_CODE {
 	CONTINUE = 100,
-	SWITCHING_PROTOCOLS, // 101 switching_protocols
+	SWITCHING_PROTOCOLS,            // 101 switching_protocols
 	PROCESSING,
-	OK = 200, // 200 ok
+	OK = 200,                       // 200 ok
 	CREATED,
 	ACCEPTED,
 	NON_AUTHORITATIVE_INFORMATION,
@@ -29,7 +31,7 @@ enum STATUS_CODE {
 	UNAUTHORIZED,
 	PAYMENT_REQUIRED,
 	FORBIDDEN,
-	NOT_FOUND, // 404 not_fonud
+	NOT_FOUND,                      // 404 not_fonud
 	METHOD_NOT_ALLOWED,
 	NOT_ACCEPTABLE,
 	PROXY_AUTHENTICATION_REQUIRED,
@@ -48,7 +50,7 @@ enum STATUS_CODE {
 	BAD_GATEWAY,
 	SERVICE_UNAVAILABLE,
 	GATEWAY_TIMEOUT,
-	HTTP_VERSION_NOT_SUPPORTED // 505 http_version_not_supported
+	HTTP_VERSION_NOT_SUPPORTED      // 505 http_version_not_supported
 };
 
 std::unordered_map<int, const std::string_view> const STATUS_STR = {
@@ -122,8 +124,9 @@ const std::unordered_map<int, const std::string_view> CONTENNT_TYPE_STR = {
 	{VIDEO, "video"},
 	{JSON, "application/json"},
 	{SCRIPT, "application/javascript"},
-	{OTHER, "other"}};
-//可能传送多种格式，所以前面不加”content-type“
+	{OTHER, "other"}
+};//可能传送多种格式，所以前面不加”content-type“
+
 enum VERSION { NOT_SUPPORTED = 0, HTTP_09 = 9, HTTP_10, HTTP_11 };
 
 enum METHOD {
@@ -139,10 +142,13 @@ enum METHOD {
 	PATCH = 1 << 8
 };
 
-enum CONNECTION { NO_CONNECTION = 0, KEEP_ALIVE = 1, CLOSE };
+enum CONNECTION { NO_CONNECTION , KEEP_ALIVE , CLOSE };
 
 const std::unordered_map<int, const std::string_view> CONNECTION_STR = {
-    {CLOSE, "Connection: close\r\n"},
-    {KEEP_ALIVE, "Connection: keep-alive\r\n"}};
+    {KEEP_ALIVE, "Connection: keep-alive\r\n"},
+    {CLOSE, "Connection: close\r\n"}
+};
 
-#endif
+} // namespace vastina
+
+#endif // _HTTP_DEF_H_

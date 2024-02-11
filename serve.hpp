@@ -28,7 +28,7 @@ private:
 
     vastina::Epoll *ep;
 
-    char readbuffer[BUFSIZ], sendbuffer[BUFSIZ] ; 
+    //char readbuffer[BUFSIZ], sendbuffer[BUFSIZ] ; 
     //Buffer *buffer;
     //to be finished as a class or struct
     bool stopflag;

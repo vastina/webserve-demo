@@ -23,7 +23,7 @@ class http {
   private:
 	int fd;
 	httpparser parser;
-	httpresponse *response;
+	httpresponse response;
 
 	Clock *clock;
 	int state;
@@ -33,7 +33,7 @@ class http {
 
   public:
 	http()
-		: fd{-1}, parser{}, response{new httpresponse()},
+		: fd{-1}, parser{}, response{httpresponse()},
 		  // stopflag{true},
 		  state{NOT_WORKING} {
 		clock = new Clock();
@@ -92,7 +92,7 @@ int http::getcallback() {
 
 void http::reset() {
 	parser.reset();
-	response->reset();
+	response.reset();
 	state = NOT_WORKING;
 }
 
@@ -104,7 +104,7 @@ auto t1 = std::chrono::high_resolution_clock::now();
 	std::cout << parser.getPath() << '\n';
 	std::cout << parser.getProtocol() << '\n';
 	std::cout << parser.getBody() << '\n';
-	response->makereponse_test(parser, buf);
+	response.autoresponse(parser, buf);
 	write(fd, (void *)buf, BUFSIZ);
 
 auto t2 = std::chrono::high_resolution_clock::now();

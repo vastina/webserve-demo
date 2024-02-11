@@ -22,7 +22,7 @@ class Epoll {
 	//     int epstdin;
 	// } stdinchecker;
   public:
-	Epoll(size_t _maxevents);
+	Epoll(size_t _maxevents = 50);
 	~Epoll();
 
 	void init(int serversock);
@@ -35,7 +35,7 @@ class Epoll {
 	// bool stdincheck();
 };
 
-Epoll::Epoll(size_t _maxevents = 50)
+Epoll::Epoll(size_t _maxevents)
 	: epfd{epoll_create(_maxevents)},
 	  maxevents{
 		  _maxevents} /*,

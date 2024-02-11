@@ -9,7 +9,6 @@
 #include <string_view>
 
 #include "httpparse.hpp"
-#include "httpdef.hpp"
 
 namespace vastina {
 
@@ -57,23 +56,25 @@ constexpr size_t default_header_length = 200;
 constexpr size_t default_body_length = 2000;
 // 随便写的
 class httpresponse {
+
   private:
 	std::string filename;
-	CONNECTION connection_type;
+	std::string body;
+	STATUS_CODE state;
+	CONNECTION connection;
 	CONTENT_TYPE content_type;
+	size_t length;
 
   public:
-	httpresponse(){};
+	httpresponse(): filename{"index.html"}, state{OK}, connection{KEEP_ALIVE}, content_type{TEXT}, length{default_body_length}{};
 	~httpresponse(){};
 
 	void reset();
-	void makereponse_test(httpparser &parser,
-						  char *buf); // no buffer now, so send parser directly
 
 	void autoresponse(httpparser &parser, char *buf);
 	void solverequestline(httpparser &parser);
 	void solvepath(const std::string &str);
-	void addheader(std::string *response, int code, size_t length = default_body_length, CONNECTION connection_type);
+	void addheader(std::string *response);
 };
 
 void writefile(char *buf, int count, std::string filename) {
@@ -85,11 +86,10 @@ void writefile(char *buf, int count, std::string filename) {
 
 void httpresponse::solverequestline(httpparser &parser) {
 	switch (parser.getProtocol()) {
-	case HTTP_11:
+	case HTTP_11:{
 		switch (parser.getMethod()) {
 		case GET:
 			solvepath(parser.getPath());
-
 			break;
 		case POST:
 			/* code */
@@ -98,186 +98,118 @@ void httpresponse::solverequestline(httpparser &parser) {
 			break;
 		}
 		break;
-	default:
-		//addheader()
+	}
+	default: {
+		filename = "505.html";
+		state = HTTP_VERSION_NOT_SUPPORTED;
+		content_type = TEXT;
+		connection = CLOSE;
 		break;
+	}
 	}
 }
 
 void httpresponse::solvepath(const std::string &str) {
 	if (str == "/"){
 		filename = "index.html";
+		state = OK;
+		content_type = TEXT;
+
+		length = default_body_length;
 	}
 	else if (str == "/test"){
-		filename.clear();
+		filename = "204.html";
+		state = ACCEPTED;
+		content_type = TEXT;
+
+		length = default_body_length;
 	}
 	else if (str == "/login?text=test") {
 		// todo: parse action?body
 		filename = "page2/gettest.html";
+		state = OK;
+		content_type = TEXT;
+
+		length = default_body_length;
 	} else {
 		filename = str.substr(1);
 		if (!cachetree::getInstance().static_file_exist(filename)) {
 			filename = "404.html";
+			state = NOT_FOUND;
+			content_type = TEXT;
+
+			length = default_body_length;
+		}
+		else state = OK;
+		if(state == OK){
+			if(filename.find(".html") != std::string::npos)
+				content_type = TEXT;
+			else if(filename.find(".ico") != std::string::npos)
+				content_type = ICON;
+			else if(filename.find(".gif") != std::string::npos)
+				content_type = GIF;
+			else if(filename.find(".png") != std::string::npos)
+				content_type = PNG;
+			else if(filename.find(".jpeg") != std::string::npos)
+				content_type = JPEG;
+			else if(filename.find(".audio") != std::string::npos)
+				content_type = AUDIO;
+			else if(filename.find(".video") != std::string::npos)
+				content_type = VIDEO;
+			else if(filename.find(".json") != std::string::npos)
+				content_type = JSON;
+			else if(filename.find(".js") != std::string::npos)
+				content_type = SCRIPT;
+			else
+				content_type = OTHER;
 		}
 	}
 }
 
-void httpresponse::addheader(std::string *response, int state, size_t length, CONNECTION connection_type) {
-	{//no if part
-		response->append("HTTP/1.1 ").append(STATUS_STR.at(state));
-		response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
-		response->append("Server: localhost:6780\r\n");
-		response->append("Content-Length: ")
+void httpresponse::addheader(std::string *response) {
+	response->append("HTTP/1.1 ").append(STATUS_STR.at(state));
+	response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
+	response->append("Server: localhost:6780\r\n");
+	response->append("Content-Length: ")
 		.append(std::to_string(length))
-		.append("\r\n");
-	}
-	{//???
-		response->append("Content-Type: ")
-			.append(CONTENNT_TYPE_STR.at(content_type))
-			.append("\r\n");
-		response->append(CONNECTION_STR.at(connection_type));
-	}
+		.append("\r\n")
+	;
+	response->append("Content-Type: ")
+		.append(CONTENNT_TYPE_STR.at(content_type))
+		.append(" charset=utf-8\r\n")
+	;
+	response->append(CONNECTION_STR.at(connection));
 	response->append("\r\n");
 }
 
 void httpresponse::autoresponse(httpparser &parser, char *buf) {
-	std::string *response = new std::string("");
+	std::string *response = new std::string();
 	response->reserve(default_header_length);
 	memset(buf, 0, BUFSIZ);
 
-	switch (parser.getProtocol()) {
-	case HTTP_11:
-		switch (parser.getMethod()) {
-		case GET:
-			solvepath(parser.getPath());
-
-			break;
-		case POST:
-			/* code */
-			break;
-		default:
-			break;
-		}
-		break;
-	default:
-		addheader(response, STATUS_CODE::HTTP_VERSION_NOT_SUPPORTED);
-		break;
+	if(parser["connection"] == "keep-alive\r"){
+		connection = KEEP_ALIVE;
 	}
-}
-
-void httpresponse::reset() {}
-
-void justfortest(std::string *response, int code, bool connection = false,
-				 size_t length = 2000) {
-	response->append("HTTP/1.1 ").append(STATUS_STR.at(code));
-	response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
-	response->append("Server: localhost:7895\r\n");
-	response->append("Content-Length: ")
-		.append(std::to_string(length))
-		.append("\r\n");
-	;
-	response->append("Content-Type: text/html charset=utf-8\r\n");
-	if (connection)
-		response->append("Connection: keep-alive\r\n");
-	else
-		response->append("Connection: close\r\n");
-	response->append("\r\n");
-}
-
-// response of existed requests should be writen into cache to speed up?
-
-void httpresponse::makereponse_test(httpparser &parser, char *buf) {
-
-	// var 1, 2, 3...
-	// makeresponse(&1, &2, &3...)
-	// update_state(1, 2, 3)
-	// or they should be the private member of this class
-
-	std::string *response = new std::string("");
-	response->reserve(200);
-	bzero(buf, BUFSIZ);
-
-	if (parser.getMethod() == GET && parser.getProtocol() == HTTP_11) {
-
-		if (parser.getPath() == "/") {
-			if (cachetree::getInstance().static_file_exist(
-					std::move("index.html"))) {
-				justfortest(response, STATUS_CODE::OK);
-				strcpy(buf, response->c_str());
-
-				writefile(buf, response->size(), "index.html");
-			}
-		}
-
-		else if (parser.getPath() == "/test") {
-			std::string body{" 114514"};
-			justfortest(response, STATUS_CODE::ACCEPTED, body.length());
-			response->append(body);
-			strcpy(buf, response->c_str());
-		}
-
-		else if (parser.getPath() == "/login?text=vastina") {
-			justfortest(response, STATUS_CODE::OK);
-			strcpy(buf, response->c_str());
-
-			if (cachetree::getInstance().static_file_exist(
-					std::move("page2/gettest.html")))
-				writefile(buf, response->size(), "page2/gettest.html");
-		}
-
-		else if (parser.getPath() == "/favicon.ico") {
-			response->append("HTTP/1.1 ")
-				.append(STATUS_STR.at(STATUS_CODE::OK));
-			response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
-			response->append("Server: localhost:7895\r\n");
-			response->append("Content-Length: ")
-				.append(std::to_string(default_body_length))
-				.append("\r\n");
-			;
-			response->append("Content-Type: image/x-icon\r\n");
-			response->append("Connection: keep-alive\r\n");
-			response->append("\r\n");
-			strcpy(buf, response->c_str());
-
-			writefile(buf, response->size(), "favicon.ico");
-		}
-
-		else if (cachetree::getInstance().static_file_exist(
-					 parser.getPath().substr(1))) {
-			justfortest(response, STATUS_CODE::OK);
-			strcpy(buf, response->c_str());
-
-			writefile(buf, response->size(),
-					  parser.getPath().substr(1).c_str());
-		}
-
-		else if (cachetree::getInstance().static_file_exist("404.html")) {
-			justfortest(response, STATUS_CODE::NOT_FOUND);
-			strcpy(buf, response->c_str());
-
-			writefile(buf, response->size(), "404.html");
-		}
-
+	else{
+		connection = CLOSE;
 	}
 
-	else if (parser.getMethod() == POST) {
-	}
+	solverequestline(parser);
 
-	else if (parser.getProtocol() != HTTP_11) {
-		justfortest(response, STATUS_CODE::HTTP_VERSION_NOT_SUPPORTED);
-		strcpy(buf, response->c_str());
+	addheader(response);	
+	strcpy(buf, response->c_str());	
 
-		writefile(buf, response->size(), "505.html");
-	}
-
-	else {
-		justfortest(response, STATUS_CODE::BAD_REQUEST, false, 0);
-		strcpy(buf, response->c_str());
-
-		writefile(buf, response->size(), "502.html");
-	}
-
+	writefile(buf, response->size(), filename);
+	
 	delete response;
+}
+
+void httpresponse::reset() {
+	filename.clear();
+	state = NOT_FOUND;
+	connection = NO_CONNECTION;
+	content_type = TEXT;
+	length = default_body_length;
 }
 
 } // namespace vastina

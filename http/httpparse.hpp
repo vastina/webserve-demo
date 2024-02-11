@@ -32,7 +32,7 @@ class httpparser {
 
   public:
 	httpparser()
-		: headers{}, method{INVALID}, version{NOT_SUPPORTED}, path{}, body{} {};
+		:  method{INVALID}, version{NOT_SUPPORTED}, path{}, body{}, headers{}{};
 	~httpparser(){};
 	void autoparse(const char *buf);
 	void autoparse(const std::string &buf);
