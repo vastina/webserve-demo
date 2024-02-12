@@ -29,9 +29,9 @@ class httpparser {
 	void parseversion(const std::string &buf);
 
   public:
-	httpparser()
-		:  method{INVALID}, version{NOT_SUPPORTED}, path{}, body{}, headers{}{};
-	~httpparser(){};
+	httpparser();
+	~httpparser();
+	
 	void autoparse(const char *buf);
 	void autoparse(const std::string &buf);
 	enum parts { START_LINE, HEADERS, BODY };
@@ -41,9 +41,9 @@ class httpparser {
 	std::string operator[](const std::string &str);
 
 	METHOD getMethod();
-	const std::string &getPath();
+	const std::string& getPath();
 	VERSION getProtocol();
-	std::string getBody();
+	const std::string& getBody();
 };
 
 } // namespace vastina

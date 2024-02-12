@@ -41,7 +41,7 @@ uint32_t Epoll::getevent(int index) { return ep_events[index].events; }
 
 void Epoll::epoll_add(int fd) {
 	int flag = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flag | O_NONBLOCK);
+	fcntl(fd, F_SETFL, flag | SOCK_NONBLOCK);
 
 	event.events = EPOLLIN | EPOLLET;
 	event.data.fd = fd;

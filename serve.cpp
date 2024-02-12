@@ -48,8 +48,8 @@ void server::run(){
     {
         int event_cnt = ep->Epoll_wait();
         if(event_cnt == -1)
-        {
-
+        {// until now, I haven't met this situation
+            printf("epoll_wait fail, error code: %d\n", errno);
         }
         for(auto i=0; i<event_cnt; ++i)
         {
@@ -59,9 +59,14 @@ void server::run(){
                 {
                     int clntsock = accept(serversock, (struct sockaddr *)&addr, &len);
                     ep->epoll_add(clntsock);
-                    if(!clients[clntsock]) clients[clntsock] = new vastina::http(clntsock);
-                    //else clients[clntsock]->reset(); todo
-                    std::cout << "fd: "<< clntsock << '\n';
+
+                    if(!clients[clntsock]) 
+                        clients[clntsock] = new vastina::http(clntsock);
+                    else 
+                        clients[clntsock]->reset(); 
+
+std::cout << "fd: "<< clntsock << '\n';
+
                     pool.enqueue([this, clntsock](){
                         clients[clntsock]->process();
                     });
@@ -73,11 +78,13 @@ void server::run(){
 std::cout << "fd: "<< clntsock << " callback: " << callback << '\n';
                     if(callback == vastina::http::STATE::NORMAL_END)
                     {
-                        closeFD(clntsock);
+                        if(!clients[clntsock]->connection_check())
+                            closeFD(clntsock);
                     }
                     else if(callback == vastina::http::STATE::ERROR_END)
                     {
-                        closeFD(clntsock);
+                        if(errno != EAGAIN && errno != EWOULDBLOCK)
+                            closeFD(clntsock);
                         //todo:log it
                     }
                 }
@@ -96,6 +103,7 @@ std::cout << "fd: "<< clntsock << " callback: " << callback << '\n';
 void server::end(){
     close(serversock);
     for(auto &client:clients){ delete client.second; }
+    clients.clear();
     ep->~Epoll();
     delete ep;
 }

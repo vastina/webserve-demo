@@ -2,3 +2,4 @@ f/demo
 build/*
 .vscode/*
 test/*
+log/logtest.txt

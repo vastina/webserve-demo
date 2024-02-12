@@ -29,7 +29,6 @@ class cachetree { // to do
 				   const fs::path &relativePath = fs::path());
 
 	bool static_file_exist(const std::string &str);
-	// bool static_file_exist(std::string str);
 };
 
 constexpr size_t default_header_length = 200;
@@ -46,8 +45,8 @@ class httpresponse {
 	size_t length;
 
   public:
-	httpresponse(): filename{"index.html"}, state{OK}, connection{KEEP_ALIVE}, content_type{TEXT}, length{default_body_length}{};
-	~httpresponse(){};
+	httpresponse();
+	~httpresponse();
 
 	void reset();
 

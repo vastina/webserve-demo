@@ -57,39 +57,34 @@ void Taskpool::start() {
 	submittask([] { vastina::logtest("taskpool init"); }, importance::lowest);
 }
 
-void Taskpool::lastwork(){{std::unique_lock<std::mutex> lock(tmutex);
-std::function<void()> task;
-while (!tasks.empty()) {
-	{
+void Taskpool::lastwork(){
+	std::unique_lock<std::mutex> lock(tmutex);
+	std::function<void()> task;
+	while (!tasks.empty()) {
 		task = std::move(tasks.front());
 		tasks.pop();
+		task();
 	}
-	task();
+	// print("(commonfuture: {})\n",common._future.get());
 }
-} 
-// print("(commonfuture: {})\n",common._future.get());
-}
-;
 
 template <typename F, typename... Args>
 void Taskpool::submittask(F &&f, Args &&...args, int level) {
+
 	std::function<decltype(f(args...))()> func =
 		std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+	
 	auto task_ptr =
 		std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
-	if (level == importance::lowest) {
-		{
-			std::unique_lock<std::mutex> lock(tmutex);
-			tasks.emplace(
-				std::function<void()>([task_ptr]() { (*task_ptr)(); }));
-		}
-	} else if (level == importance::common) {
-		{
-			std::unique_lock<std::mutex> lk(tmutex);
-			tasks2.emplace(
-				std::function<void()>([task_ptr]() { (*task_ptr)(); }));
-			// common.condition.notify_one();
-		}
+
+	if(level == importance::lowest) {
+		std::unique_lock<std::mutex> lock(tmutex);
+		tasks.emplace([task_ptr]() { (*task_ptr)(); });
+	} 
+	else if(level == importance::common) {
+		std::unique_lock<std::mutex> lk(tmutex);
+		tasks2.emplace([task_ptr]() { (*task_ptr)(); });
+
 		if (common.worker.joinable())
 			common.worker.join();
 	}

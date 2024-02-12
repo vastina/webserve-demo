@@ -2,6 +2,16 @@
 
 namespace vastina {
 
+httpparser::httpparser():  
+	method{INVALID}, version{NOT_SUPPORTED}, 
+	path{}, body{}, headers{}{
+};
+
+httpparser::~httpparser(){
+	body.clear();
+	headers.clear();
+};
+
 void httpparser::reset() {
 	headers.clear();
 	method = INVALID;
@@ -13,7 +23,7 @@ void httpparser::reset() {
 METHOD httpparser::getMethod() { return method; }
 const std::string &httpparser::getPath() { return path; }
 VERSION httpparser::getProtocol() { return version; }
-std::string httpparser::getBody() { return body; }
+const std::string& httpparser::getBody() { return body; }
 
 void httpparser::parsemethod(const std::string &tmp) {
 	switch (tmp[0]) {

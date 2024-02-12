@@ -2,6 +2,16 @@
 
 namespace vastina {
 
+http::http():	
+	fd{-1}, parser{}, response{},
+	state{NOT_WORKING}, clock{new Clock()} {
+};
+
+http::http(int _fd):	
+	fd{_fd}, parser{}, response{},
+	state{NOT_WORKING}, clock{new Clock()} {
+};
+
 void http::process() {
 	thread_local char readbuf[BUFSIZ], sendbuf[BUFSIZ];
 	thread_local int str_len;

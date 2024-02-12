@@ -4,8 +4,6 @@
 #include <unordered_map>
 #include <string_view>
 
-namespace vastina {
-
 enum STATUS_CODE {
 	CONTINUE = 100,
 	SWITCHING_PROTOCOLS,            // 101 switching_protocols
@@ -148,7 +146,5 @@ const static std::unordered_map<int, const std::string_view> CONNECTION_STR = {
     {KEEP_ALIVE, "Connection: keep-alive\r\n"},
     {CLOSE, "Connection: close\r\n"}
 };
-
-} // namespace vastina
 
 #endif // _HTTP_DEF_H_

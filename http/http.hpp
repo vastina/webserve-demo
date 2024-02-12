@@ -25,25 +25,14 @@ class http {
 	httpparser parser;
 	httpresponse response;
 
-	Clock *clock;
 	int state;
-	// bool stopflag;
+	Clock *clock;
+
 	std::mutex lock;
-	// std::condition_variable newMessage;
 
   public:
-	http()
-		: fd{-1}, parser{}, response{httpresponse()},
-		  // stopflag{true},
-		  state{NOT_WORKING} {
-		clock = new Clock();
-	};
-	http(int _fd)
-		: fd{_fd}, parser{}, response{},
-		  // stopflag{true},
-		  state{NOT_WORKING} {
-		clock = new Clock();
-	};
+	http();
+	http(int _fd);
 
 	bool connection_check();
 	void reset();

@@ -5,9 +5,6 @@ namespace vastina {
 bool cachetree::static_file_exist(const std::string &str) {
 	return static_files.find(str) != static_files.end();
 }
-// bool cachetree::static_file_exist(std::string str) {
-//     return static_files.find(str) != static_files.end();
-// }
 
 void cachetree::init_read(const fs::path &directory,
 						  const fs::path &relativePath) {
@@ -28,6 +25,16 @@ void writefile(char *buf, int count, std::string filename) {
 	infile.read(buf + count, BUFSIZ - count);
 	infile.close();
 }
+
+httpresponse::httpresponse(): 
+	filename{"index.html"}, state{OK}, connection{KEEP_ALIVE}, 
+	content_type{TEXT}, length{default_body_length}{
+};
+
+httpresponse::~httpresponse(){
+	filename.clear();
+	body.clear();
+};
 
 void httpresponse::solverequestline(httpparser &parser) {
 	switch (parser.getProtocol()) {
