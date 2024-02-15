@@ -16,6 +16,11 @@ void cachetree::init_read(const fs::path &directory,
 		fs::path relativePath = fs::relative(entry.path(), absDirectoryPath);
 		static_files.insert(relativePath.string());
 	}
+
+//test
+	for(const auto file: static_files){
+		std::cout << file << std::endl;
+	}
 }
 
 
@@ -118,25 +123,25 @@ void httpresponse::solvepath(const std::string &str) {
 	}
 }
 
-void httpresponse::addheader(std::string *response) {
-	response->append("HTTP/1.1 ").append(STATUS_STR.at(state));
-	response->append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
-	response->append("Server: localhost:6780\r\n");
-	response->append("Content-Length: ")
+void httpresponse::addheader(std::string& response) {
+	response.append("HTTP/1.1 ").append(STATUS_STR.at(state));
+	response.append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
+	response.append("Server: localhost:6780\r\n");
+	response.append("Content-Length: ")
 		.append(std::to_string(length))
 		.append("\r\n")
 	;
-	response->append("Content-Type: ")
+	response.append("Content-Type: ")
 		.append(CONTENNT_TYPE_STR.at(content_type))
 		.append(" charset=utf-8\r\n")
 	;
-	response->append(CONNECTION_STR.at(connection));
-	response->append("\r\n");
+	response.append(CONNECTION_STR.at(connection));
+	response.append("\r\n");
 }
 
 void httpresponse::autoresponse(httpparser &parser, char *buf) {
-	std::string *response = new std::string();
-	response->reserve(default_header_length);
+	std::string response;
+	response.reserve(default_header_length);
 	memset(buf, 0, BUFSIZ);
 
 	if(parser["connection"] == "keep-alive\r"){
@@ -149,11 +154,13 @@ void httpresponse::autoresponse(httpparser &parser, char *buf) {
 	solverequestline(parser);
 
 	addheader(response);	
-	strcpy(buf, response->c_str());	
+	//strcpy(buf, response->c_str());	
+	int len = response.size();
+	buf = std::move(response.data());
 
-	writefile(buf, response->size(), filename);
+	writefile(buf, len, filename);
 	
-	delete response;
+	//delete response;
 }
 
 void httpresponse::reset() {

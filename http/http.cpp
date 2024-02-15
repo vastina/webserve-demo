@@ -55,13 +55,17 @@ void http::reset() {
 }
 
 void http::reponse_test(const char *readbuf, char *buf) {
+	
 auto t1 = std::chrono::high_resolution_clock::now();
-	// std::cout << readbuf <<'\n';
+std::cout << readbuf <<'\n';
+
 	parser.autoparse(readbuf);
-	std::cout << parser.getMethod() << '\n';
-	std::cout << parser.getPath() << '\n';
-	std::cout << parser.getProtocol() << '\n';
-	std::cout << parser.getBody() << '\n';
+
+std::cout << parser.getMethod() << '\n';
+std::cout << parser.getPath() << '\n';
+std::cout << parser.getProtocol() << '\n';
+std::cout << parser.getBody() << '\n';
+
 	response.autoresponse(parser, buf);
 	write(fd, (void *)buf, BUFSIZ);
 

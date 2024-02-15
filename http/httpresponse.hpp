@@ -53,7 +53,7 @@ class httpresponse {
 	void autoresponse(httpparser &parser, char *buf);
 	void solverequestline(httpparser &parser);
 	void solvepath(const std::string &str);
-	void addheader(std::string *response);
+	void addheader(std::string& response);
 };
 
 } // namespace vastina
