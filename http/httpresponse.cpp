@@ -144,20 +144,20 @@ void httpresponse::autoresponse(httpparser &parser, char *buf) {
 	response.reserve(default_header_length);
 	memset(buf, 0, BUFSIZ);
 
-	if(parser["connection"] == "keep-alive\r"){
-		connection = KEEP_ALIVE;
+	if(parser["connection"] == "close\r"){
+		connection = CLOSE;
 	}
 	else{
-		connection = CLOSE;
+		connection = KEEP_ALIVE;
 	}
 
 	solverequestline(parser);
 
 	addheader(response);	
-	//strcpy(buf, response->c_str());	
+	
 	int len = response.size();
-	buf = std::move(response.data());
-
+	strcpy(buf, std::move(response.c_str()));	
+	
 	writefile(buf, len, filename);
 	
 	//delete response;
