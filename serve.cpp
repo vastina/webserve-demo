@@ -96,14 +96,12 @@ std::cout << "fd: "<< clntsock << " callback: " << callback << '\n';
             }
 
         }
-        //stopflag = ep->stdincheck();
+        stopflag = ep->stdincheck();
     }
 }
 
 void server::end(){
     close(serversock);
-    for(auto &client:clients){ delete client.second; }
     clients.clear();
     ep->~Epoll();
-    delete ep;
 }

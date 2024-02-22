@@ -18,7 +18,7 @@ void cachetree::init_read(const fs::path &directory,
 	}
 
 //test
-	for(const auto file: static_files){
+	for(const auto& file: static_files){
 		std::cout << file << std::endl;
 	}
 }

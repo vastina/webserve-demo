@@ -11,17 +11,20 @@
 namespace vastina {
 
 class Epoll {
-  private:
+
+private:
 	epoll_event *ep_events;
 	epoll_event event;
 	int epfd;
 	size_t maxevents;
 	const static int timeMs = -1;
-	// struct _stdincheck{
-	//     epoll_event event;
-	//     int epstdin;
-	// } stdinchecker;
-  public:
+
+	struct _stdincheck{
+	    epoll_event event[1];
+	    int epstdin;
+	} stdinchecker;
+
+public:
 	Epoll(size_t _maxevents = 50);
 	~Epoll();
 
@@ -32,7 +35,7 @@ class Epoll {
 	void epoll_del(int index);
 	int getfd(int index);
 
-	// bool stdincheck();
+	bool stdincheck();
 };
 
 } // namespace vastina

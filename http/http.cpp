@@ -57,7 +57,7 @@ void http::reset() {
 void http::reponse_test(const char *readbuf, char *buf) {
 	
 auto t1 = std::chrono::high_resolution_clock::now();
-std::cout << readbuf <<'\n';
+//std::cout << readbuf <<'\n';
 
 	parser.autoparse(readbuf);
 
