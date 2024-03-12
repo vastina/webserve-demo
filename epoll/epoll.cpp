@@ -1,5 +1,7 @@
 #include "epoll.hpp"
 
+#include <iostream>
+
 namespace vastina {
 
 Epoll::Epoll(size_t _maxevents): 

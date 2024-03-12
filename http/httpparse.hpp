@@ -1,12 +1,8 @@
 #ifndef _HTTP_PARSE_H_
 #define _HTTP_PARSE_H_
 
-#include <chrono>
-#include <iostream>
 #include <map>
-#include <sstream>
 #include <string>
-#include <unordered_map>
 
 #include "httpdef.hpp"
 
@@ -40,10 +36,10 @@ class httpparser {
 
 	std::string operator[](const std::string &str);
 
-	METHOD getMethod();
-	const std::string& getPath();
-	VERSION getProtocol();
-	const std::string& getBody();
+	METHOD getMethod() const;
+	const std::string& getPath() const ;
+	VERSION getProtocol() const ;
+	const std::string& getBody() const ;
 };
 
 } // namespace vastina

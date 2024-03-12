@@ -1,5 +1,8 @@
 #include "httpresponse.hpp"
 
+#include <iostream>
+#include <fstream>
+
 namespace vastina {
 
 bool cachetree::static_file_exist(const std::string &str) {

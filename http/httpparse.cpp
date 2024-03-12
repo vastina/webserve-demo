@@ -1,5 +1,9 @@
 #include "httpparse.hpp"
 
+#include <chrono>
+#include <iostream>
+#include <sstream>
+
 namespace vastina {
 
 httpparser::httpparser():  
@@ -20,10 +24,10 @@ void httpparser::reset() {
 	body.clear();
 }
 
-METHOD httpparser::getMethod() { return method; }
-const std::string &httpparser::getPath() { return path; }
-VERSION httpparser::getProtocol() { return version; }
-const std::string& httpparser::getBody() { return body; }
+METHOD httpparser::getMethod () const { return method; }
+const std::string &httpparser::getPath () const { return path; }
+VERSION httpparser::getProtocol () const { return version; }
+const std::string& httpparser::getBody() const { return body; }
 
 void httpparser::parsemethod(const std::string &tmp) {
 	switch (tmp[0]) {

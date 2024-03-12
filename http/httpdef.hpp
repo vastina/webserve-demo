@@ -111,18 +111,18 @@ enum CONTENT_TYPE {
 	OTHER
 };
 
-const static std::unordered_map<int, const std::string_view> CONTENNT_TYPE_STR = {
-	{PURETEST, "text/plain"},
-	{TEXT, "text/html"},
-	{ICON, "image/x-icon"},
-	{GIF, "image/gif"},
-	{PNG, "image/png"},
-	{JPEG, "image/jpeg"},
-	{AUDIO, "audio"},
-	{VIDEO, "video"},
-	{JSON, "application/json"},
-	{SCRIPT, "application/javascript"},
-	{OTHER, "other"}
+const static std::unordered_map<CONTENT_TYPE, const std::string_view> CONTENNT_TYPE_STR = {
+	{CONTENT_TYPE::PURETEST, "text/plain"},
+	{CONTENT_TYPE::TEXT, "text/html"},
+	{CONTENT_TYPE::ICON, "image/x-icon"},
+	{CONTENT_TYPE::GIF, "image/gif"},
+	{CONTENT_TYPE::PNG, "image/png"},
+	{CONTENT_TYPE::JPEG, "image/jpeg"},
+	{CONTENT_TYPE::AUDIO, "audio"},
+	{CONTENT_TYPE::VIDEO, "video"},
+	{CONTENT_TYPE::JSON, "application/json"},
+	{CONTENT_TYPE::SCRIPT, "application/javascript"},
+	{CONTENT_TYPE::OTHER, "other"}
 };//可能传送多种格式，所以前面不加”content-type“
 
 enum VERSION { NOT_SUPPORTED = 0, HTTP_09 = 9, HTTP_10, HTTP_11 };
@@ -142,9 +142,9 @@ enum METHOD {
 
 enum CONNECTION { NO_CONNECTION , KEEP_ALIVE , CLOSE };
 
-const static std::unordered_map<int, const std::string_view> CONNECTION_STR = {
-    {KEEP_ALIVE, "Connection: keep-alive\r\n"},
-    {CLOSE, "Connection: close\r\n"}
+const static std::unordered_map<CONNECTION, const std::string_view> CONNECTION_STR = {
+    {CONNECTION::KEEP_ALIVE, "Connection: keep-alive\r\n"},
+    {CONNECTION::CLOSE, "Connection: close\r\n"}
 };
 
 #endif // _HTTP_DEF_H_

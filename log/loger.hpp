@@ -1,10 +1,7 @@
 #ifndef _LOGER_H_
 #define _LOGER_H_
 
-#include <chrono>
-#include <cstring>
 #include <fstream>
-#include <iostream>
 
 namespace vastina {
 

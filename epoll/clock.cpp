@@ -1,5 +1,7 @@
 #include "clock.hpp"
 
+#include <iostream>
+
 namespace vastina {
 
 bool Clock::check_connection() {

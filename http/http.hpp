@@ -2,16 +2,9 @@
 #define _HTTP_H_
 
 #include <arpa/inet.h>
-#include <condition_variable>
-#include <cstring>
-#include <errno.h>
-#include <fstream>
-#include <iostream>
 #include <mutex>
-#include <set>
 #include <sys/socket.h>
 #include <sys/unistd.h>
-#include <thread>
 
 #include "../epoll/clock.hpp"
 #include "httpparse.hpp"

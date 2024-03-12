@@ -1,5 +1,7 @@
 #include "http.hpp"
 
+#include <iostream>
+
 namespace vastina {
 
 http::http():	

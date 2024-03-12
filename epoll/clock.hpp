@@ -2,7 +2,6 @@
 #define _COLOCK_H_
 
 #include <chrono>
-#include <iostream>
 
 namespace vastina {
 

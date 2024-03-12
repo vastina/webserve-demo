@@ -2,8 +2,6 @@
 #define _EPOLL_H_
 
 #include <fcntl.h>
-#include <iostream>
-#include <queue>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/unistd.h>
