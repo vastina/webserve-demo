@@ -3,17 +3,17 @@
 
 #include <cstring>
 #include <fstream>
-#include <cstring>
-#include <fstream>
 #include <iostream>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/unistd.h>
 
-namespace vastina {
+namespace vastina
+{
 
-class Buffer {
-};
+    class Buffer
+    {
+    };
 
 } // namespace vastina
 
