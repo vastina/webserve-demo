@@ -63,7 +63,7 @@ void server::Run()
                     ep->EpollAdd(clntsock);
 
                     if (!clients[clntsock])
-                        clients[clntsock] = new vastina::Http(clntsock);
+                        clients[clntsock] = std::make_unique<vastina::Http>(clntsock);
                     else
                         clients[clntsock]->Reset();
 
@@ -92,7 +92,7 @@ void server::Run()
             if (ep->getEvent(i) & EPOLLHUP)
             {
                 int sock = ep->getFD(i);
-                delete clients[sock];
+                clients[sock].~unique_ptr();
             }
         }
         stopflag = ep->stdincheck();

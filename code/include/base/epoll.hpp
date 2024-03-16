@@ -17,7 +17,7 @@ namespace vastina
         epoll_event event;
         int epfd;
         size_t maxevents;
-        const static int timeMs = -1;
+        constexpr static int timeMs = -1;
 
         struct _stdincheck
         {

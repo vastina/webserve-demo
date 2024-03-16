@@ -7,7 +7,7 @@ int main(int argv, const char* argc[])
     //     return -1;
     // }
 
-    server* test = new server();
+    std::unique_ptr<server> test = std::make_unique<server>();
     test->setSocket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0, 6780); // atoi(argc[1])
     test->Init();
     test->Run();

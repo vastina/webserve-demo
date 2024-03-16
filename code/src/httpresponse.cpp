@@ -6,6 +6,8 @@
 namespace vastina
 {
 
+    CacheTree::~CacheTree() { static_files.clear(); }
+
     bool CacheTree::StaticFileExist(const std::string& str) { return static_files.find(str) != static_files.end(); }
 
     void CacheTree::InitRead(const fs::path& directory, const fs::path& relativePath)

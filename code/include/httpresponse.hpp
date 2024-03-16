@@ -17,6 +17,7 @@ namespace vastina
     { // to do
       private:
         CacheTree() : static_files{} {}
+        ~CacheTree();
 
         std::set<std::string> static_files;
 

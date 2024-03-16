@@ -34,7 +34,7 @@ class server
     // to be finished as a class or struct
     bool stopflag;
 
-    std::unordered_map<int, vastina::Http*> clients;
+    std::unordered_map<int, std::unique_ptr<vastina::Http>> clients;
 
     ThreadPool pool;
 
