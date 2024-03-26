@@ -180,4 +180,12 @@ namespace vastina
         length = default_body_length;
     }
 
+/*
+most of the code here is very simple and should not be writen by c++
+other languages like java or python could be more suitable and more safe
+
+What should I do next?
+*/
+
+
 } // namespace vastina

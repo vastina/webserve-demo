@@ -3,11 +3,6 @@
 void server::setSocket(int af, int type, int protocol, short port)
 {
     serversock = socket(af, type, protocol);
-    int reuse = 1, nodelay = 1;
-    setsockopt(serversock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-    setsockopt(serversock, IPPROTO_TCP, 1, &nodelay, sizeof(nodelay));
-    int flag = fcntl(serversock, F_GETFL, 0);
-    fcntl(serversock, F_SETFL, flag | O_NONBLOCK);
 
     struct sockaddr_in serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));
@@ -22,6 +17,12 @@ void server::setSocket(int af, int type, int protocol, short port)
     {
         printf("listen fail, error code: %d\n", errno);
     }
+
+    int reuse = 1, nodelay = 1;
+    setsockopt(serversock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    setsockopt(serversock, IPPROTO_TCP, 1, &nodelay, sizeof(nodelay));
+    int flag = fcntl(serversock, F_GETFL, 0);
+    fcntl(serversock, F_SETFL, flag | O_NONBLOCK);
 }
 
 void server::Init()
