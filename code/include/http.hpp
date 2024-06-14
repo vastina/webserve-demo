@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/unistd.h>
 
-#include "../epoll/clock.hpp"
+#include "clock.hpp"
 #include "httpparse.hpp"
 #include "httpresponse.hpp"
 

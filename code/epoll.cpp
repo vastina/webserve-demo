@@ -1,6 +1,7 @@
 #include "epoll.hpp"
 
 #include <iostream>
+#include <unistd.h>
 
 namespace vastina {
 
@@ -61,7 +62,7 @@ void Epoll::epoll_add( int fd )
 
 void Epoll::epoll_del( int fd )
 {
-  event = { 0 };
+  event = { STDIN_FILENO, { .fd = STDIN_FILENO } };
 
   epoll_ctl( epfd, EPOLL_CTL_DEL, fd, &event );
 }

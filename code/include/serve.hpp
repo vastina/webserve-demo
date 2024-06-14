@@ -12,11 +12,11 @@
 #include <fcntl.h>
 #include <queue>
 
-#include "log/loger.hpp"
-#include "http/http.hpp"
-#include "buffer/buffer.hpp"
-#include "epoll/epoll.hpp"
-#include "pool/ThreadPool.hpp"
+#include "loger.hpp"
+#include "http.hpp"
+#include "buffer.hpp"
+#include "epoll.hpp"
+#include "ThreadPool.hpp"
 
 // 加了namespace vastina之后，所有线程大部分时间都会一直卡在epoll_wait
 // 往threadpool里面加入新任务之后也不起任何作用
