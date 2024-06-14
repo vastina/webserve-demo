@@ -8,32 +8,34 @@
 
 namespace vastina {
 
-class Epoll {
+class Epoll
+{
 
 private:
-	epoll_event *ep_events;
-	epoll_event event;
-	int epfd;
-	size_t maxevents;
-	const static int timeMs = -1;
+  epoll_event* ep_events;
+  epoll_event event;
+  int epfd;
+  size_t maxevents;
+  const static int timeMs = -1;
 
-	struct _stdincheck{
-	    epoll_event event[1];
-	    int epstdin;
-	} stdinchecker;
+  struct _stdincheck
+  {
+    epoll_event event[1];
+    int epstdin;
+  } stdinchecker;
 
 public:
-	Epoll(size_t _maxevents = 50);
-	~Epoll();
+  Epoll( size_t _maxevents = 50 );
+  ~Epoll();
 
-	void init(int serversock);
-	int Epoll_wait();
-	uint32_t getevent(int index);
-	void epoll_add(int fd);
-	void epoll_del(int index);
-	int getfd(int index);
+  void init( int serversock );
+  int Epoll_wait();
+  uint32_t getevent( int index );
+  void epoll_add( int fd );
+  void epoll_del( int index );
+  int getfd( int index );
 
-	bool stdincheck();
+  bool stdincheck();
 };
 
 } // namespace vastina

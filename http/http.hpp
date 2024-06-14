@@ -12,28 +12,35 @@
 
 namespace vastina {
 
-class http {
-  private:
-	int fd;
-	httpparser parser;
-	httpresponse response;
+class http
+{
+private:
+  int fd;
+  httpparser parser;
+  httpresponse response;
 
-	int state;
-	Clock *clock;
+  int state;
+  Clock* clock;
 
-	std::mutex lock;
+  std::mutex lock;
 
-  public:
-	http();
-	http(int _fd);
+public:
+  http();
+  http( int _fd );
 
-	bool connection_check();
-	void reset();
-	void reponse_test(const char *readbuf, char *buf);
+  bool connection_check();
+  void reset();
+  void reponse_test( const char* readbuf, char* buf );
 
-	enum STATE { NOT_WORKING = 0, PROCESSING, NORMAL_END, ERROR_END };
-	void process();
-	int getcallback();
+  enum STATE
+  {
+    NOT_WORKING = 0,
+    PROCESSING,
+    NORMAL_END,
+    ERROR_END
+  };
+  void process();
+  int getcallback();
 };
 
 } // namespace vastina

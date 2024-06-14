@@ -12,8 +12,8 @@
 
 namespace vastina {
 
-class Buffer {
-};
+class Buffer
+{};
 
 } // namespace vastina
 

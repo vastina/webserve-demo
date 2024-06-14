@@ -8,38 +8,44 @@
 
 namespace vastina {
 
-class httpparser {
+class httpparser
+{
 
-  private:
-	METHOD method;
-	VERSION version;
-	std::string path;
-	// CONTENT_TYPE content_type;
-	std::string body;
+private:
+  METHOD method;
+  VERSION version;
+  std::string path;
+  // CONTENT_TYPE content_type;
+  std::string body;
 
-	std::map<std::string, std::string> headers;
+  std::map<std::string, std::string> headers;
 
-	std::string format_key(std::string &str);
+  std::string format_key( std::string& str );
 
-	void parsemethod(const std::string &buf);
-	void parseversion(const std::string &buf);
+  void parsemethod( const std::string& buf );
+  void parseversion( const std::string& buf );
 
-  public:
-	httpparser();
-	~httpparser();
-	
-	void autoparse(const char *buf);
-	void autoparse(const std::string &buf);
-	enum parts { START_LINE, HEADERS, BODY };
+public:
+  httpparser();
+  ~httpparser();
 
-	void reset();
+  void autoparse( const char* buf );
+  void autoparse( const std::string& buf );
+  enum parts
+  {
+    START_LINE,
+    HEADERS,
+    BODY
+  };
 
-	std::string operator[](const std::string &str);
+  void reset();
 
-	METHOD getMethod() const;
-	const std::string& getPath() const ;
-	VERSION getProtocol() const ;
-	const std::string& getBody() const ;
+  std::string operator[]( const std::string& str );
+
+  METHOD getMethod() const;
+  const std::string& getPath() const;
+  VERSION getProtocol() const;
+  const std::string& getBody() const;
 };
 
 } // namespace vastina

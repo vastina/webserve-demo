@@ -5,8 +5,8 @@
 
 namespace vastina {
 
-void logtest(const char *buffer);
-void logtime(std::fstream &fp);
+void logtest( const char* buffer );
+void logtime( std::fstream& fp );
 
 }; // namespace vastina
 

@@ -1,4 +1,3 @@
 #include "buffer.hpp"
 
-namespace vastina {
-} // namespace vastina
+namespace vastina {} // namespace vastina

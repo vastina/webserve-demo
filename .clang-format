@@ -1,13 +1,25 @@
-Language:        Cpp
-BasedOnStyle:  LLVM
-AccessModifierOffset: -2
-AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: Left
-AlignOperands:   true
-AlignTrailingComments: true
-IndentWidth:     4
-TabWidth:        4
-UseTab:          Always
-IndentCaseLabels: false
+---
+Language: Cpp
+BasedOnStyle: Mozilla
+ColumnLimit: 120
+SortIncludes: false
+IncludeBlocks: Preserve
+SpacesInParentheses: true
+AlwaysBreakAfterReturnType: None
+AlwaysBreakAfterDefinitionReturnType: None
+SpaceBeforeCpp11BracedList: true
+BreakBeforeBinaryOperators: All
+Cpp11BracedListStyle: true
+AllowShortBlocksOnASingleLine: Always
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: Never
+  AfterFunction: true
+  AfterStruct: true
+  AfterEnum: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+PackConstructorInitializers: NextLine
+...

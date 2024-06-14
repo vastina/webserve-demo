@@ -5,8 +5,9 @@
 
 namespace vastina {
 
-bool cachetree::static_file_exist(const std::string &str) {
-	return static_files.find(str) != static_files.end();
+bool cachetree::static_file_exist( const std::string& str )
+{
+  return static_files.find( str ) != static_files.end();
 }
 
 void cachetree::init_read( const fs::path& directory, const fs::path& relativePath )
@@ -19,158 +20,157 @@ void cachetree::init_read( const fs::path& directory, const fs::path& relativePa
     static_files.insert( relativePath.string() );
   }
 
-//test
-	for(const auto& file: static_files){
-		std::cout << file << std::endl;
-	}
+  // test
+  for ( const auto& file : static_files ) {
+    std::cout << file << std::endl;
+  }
 }
 
-
-void writefile(char *buf, int count, std::string filename) {
-	std::ifstream infile;
-	infile.open(filename, std::ifstream::in);
-	infile.read(buf + count, BUFSIZ - count);
-	infile.close();
+void writefile( char* buf, int count, std::string filename )
+{
+  std::ifstream infile;
+  infile.open( filename, std::ifstream::in );
+  infile.read( buf + count, BUFSIZ - count );
+  infile.close();
 }
 
-httpresponse::httpresponse(): 
-	filename{"index.html"}, state{OK}, connection{KEEP_ALIVE}, 
-	content_type{TEXT}, length{default_body_length}{
+httpresponse::httpresponse()
+  : filename { "index.html" }
+  , state { OK }
+  , connection { KEEP_ALIVE }
+  , content_type { TEXT }
+  , length { default_body_length } {};
+
+httpresponse::~httpresponse()
+{
+  filename.clear();
+  body.clear();
 };
 
-httpresponse::~httpresponse(){
-	filename.clear();
-	body.clear();
-};
-
-void httpresponse::solverequestline(httpparser &parser) {
-	switch (parser.getProtocol()) {
-	case HTTP_11:{
-		switch (parser.getMethod()) {
-		case GET:
-			solvepath(parser.getPath());
-			break;
-		case POST:
-			/* code */
-			break;
-		default:
-			break;
-		}
-		break;
-	}
-	default: {
-		filename = "505.html";
-		state = HTTP_VERSION_NOT_SUPPORTED;
-		content_type = TEXT;
-		connection = CLOSE;
-		break;
-	}
-	}
+void httpresponse::solverequestline( httpparser& parser )
+{
+  switch ( parser.getProtocol() ) {
+    case HTTP_11: {
+      switch ( parser.getMethod() ) {
+        case GET:
+          solvepath( parser.getPath() );
+          break;
+        case POST:
+          /* code */
+          break;
+        default:
+          break;
+      }
+      break;
+    }
+    default: {
+      filename = "505.html";
+      state = HTTP_VERSION_NOT_SUPPORTED;
+      content_type = TEXT;
+      connection = CLOSE;
+      break;
+    }
+  }
 }
 
-void httpresponse::solvepath(const std::string &str) {
-	if (str == "/"){
-		filename = "index.html";
-		state = OK;
-		content_type = TEXT;
+void httpresponse::solvepath( const std::string& str )
+{
+  if ( str == "/" ) {
+    filename = "index.html";
+    state = OK;
+    content_type = TEXT;
 
-		length = default_body_length;
-	}
-	else if (str == "/test"){
-		filename = "204.html";
-		state = ACCEPTED;
-		content_type = TEXT;
+    length = default_body_length;
+  } else if ( str == "/test" ) {
+    filename = "204.html";
+    state = ACCEPTED;
+    content_type = TEXT;
 
-		length = default_body_length;
-	}
-	else if (str == "/login?text=test") {
-		// todo: parse action?body
-		filename = "page2/gettest.html";
-		state = OK;
-		content_type = TEXT;
+    length = default_body_length;
+  } else if ( str == "/login?text=test" ) {
+    // todo: parse action?body
+    filename = "page2/gettest.html";
+    state = OK;
+    content_type = TEXT;
 
-		length = default_body_length;
-	} else {
-		filename = str.substr(1);
-		if (!cachetree::getInstance().static_file_exist(filename)) {
-			filename = "404.html";
-			state = NOT_FOUND;
-			content_type = TEXT;
+    length = default_body_length;
+  } else {
+    filename = str.substr( 1 );
+    if ( !cachetree::getInstance().static_file_exist( filename ) ) {
+      filename = "404.html";
+      state = NOT_FOUND;
+      content_type = TEXT;
 
-			length = default_body_length;
-		}
-		else state = OK;
-		if(state == OK){
-			if(filename.find(".html") != std::string::npos)
-				content_type = TEXT;
-			else if(filename.find(".ico") != std::string::npos)
-				content_type = ICON;
-			else if(filename.find(".gif") != std::string::npos)
-				content_type = GIF;
-			else if(filename.find(".png") != std::string::npos)
-				content_type = PNG;
-			else if(filename.find(".jpeg") != std::string::npos)
-				content_type = JPEG;
-			else if(filename.find(".audio") != std::string::npos)
-				content_type = AUDIO;
-			else if(filename.find(".video") != std::string::npos)
-				content_type = VIDEO;
-			else if(filename.find(".json") != std::string::npos)
-				content_type = JSON;
-			else if(filename.find(".js") != std::string::npos)
-				content_type = SCRIPT;
-			else
-				content_type = OTHER;
-		}
-	}
+      length = default_body_length;
+    } else
+      state = OK;
+    if ( state == OK ) {
+      if ( filename.find( ".html" ) != std::string::npos )
+        content_type = TEXT;
+      else if ( filename.find( ".ico" ) != std::string::npos )
+        content_type = ICON;
+      else if ( filename.find( ".gif" ) != std::string::npos )
+        content_type = GIF;
+      else if ( filename.find( ".png" ) != std::string::npos )
+        content_type = PNG;
+      else if ( filename.find( ".jpeg" ) != std::string::npos )
+        content_type = JPEG;
+      else if ( filename.find( ".audio" ) != std::string::npos )
+        content_type = AUDIO;
+      else if ( filename.find( ".video" ) != std::string::npos )
+        content_type = VIDEO;
+      else if ( filename.find( ".json" ) != std::string::npos )
+        content_type = JSON;
+      else if ( filename.find( ".js" ) != std::string::npos )
+        content_type = SCRIPT;
+      else
+        content_type = OTHER;
+    }
+  }
 }
 
-void httpresponse::addheader(std::string& response) {
-	response.append("HTTP/1.1 ").append(STATUS_STR.at(state));
-	response.append("Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n");
-	response.append("Server: localhost:6780\r\n");
-	response.append("Content-Length: ")
-		.append(std::to_string(length))
-		.append("\r\n")
-	;
-	response.append("Content-Type: ")
-		.append(CONTENNT_TYPE_STR.at(content_type))
-		.append(" charset=utf-8\r\n")
-	;
-	response.append(CONNECTION_STR.at(connection));
-	response.append("\r\n");
+void httpresponse::addheader( std::string& response )
+{
+  response.append( "HTTP/1.1 " ).append( STATUS_STR.at( state ) );
+  response.append( "Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n" );
+  response.append( "Server: localhost:6780\r\n" );
+  response.append( "Content-Length: " ).append( std::to_string( length ) ).append( "\r\n" );
+  response.append( "Content-Type: " ).append( CONTENNT_TYPE_STR.at( content_type ) ).append( " charset=utf-8\r\n" );
+  response.append( CONNECTION_STR.at( connection ) );
+  response.append( "\r\n" );
 }
 
-void httpresponse::autoresponse(httpparser &parser, char *buf) {
-	std::string response;
-	response.reserve(default_header_length);
-	memset(buf, 0, BUFSIZ);
+void httpresponse::autoresponse( httpparser& parser, char* buf )
+{
+  std::string response;
+  response.reserve( default_header_length );
+  memset( buf, 0, BUFSIZ );
 
-	if(parser["connection"] == "close\r"){
-		connection = CLOSE;
-	}
-	else{
-		connection = KEEP_ALIVE;
-	}
+  if ( parser["connection"] == "close\r" ) {
+    connection = CLOSE;
+  } else {
+    connection = KEEP_ALIVE;
+  }
 
-	solverequestline(parser);
+  solverequestline( parser );
 
-	addheader(response);	
-	
-	int len = response.size();
-	strcpy(buf, std::move(response.c_str()));	
-	
-	writefile(buf, len, filename);
-	
-	//delete response;
+  addheader( response );
+
+  int len = response.size();
+  strcpy( buf, std::move( response.c_str() ) );
+
+  writefile( buf, len, filename );
+
+  // delete response;
 }
 
-void httpresponse::reset() {
-	filename.clear();
-	state = NOT_FOUND;
-	connection = NO_CONNECTION;
-	content_type = TEXT;
-	length = default_body_length;
+void httpresponse::reset()
+{
+  filename.clear();
+  state = NOT_FOUND;
+  connection = NO_CONNECTION;
+  content_type = TEXT;
+  length = default_body_length;
 }
 
 } // namespace vastina
