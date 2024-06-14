@@ -9,16 +9,15 @@ bool cachetree::static_file_exist(const std::string &str) {
 	return static_files.find(str) != static_files.end();
 }
 
-void cachetree::init_read(const fs::path &directory,
-						  const fs::path &relativePath) {
-	const std::string directoryPath = "/home/net/webserve-demo/f";
-	fs::path absDirectoryPath = fs::absolute(directoryPath);
+void cachetree::init_read( const fs::path& directory, const fs::path& relativePath )
+{
+  // const std::string directoryPath = "./";
+  // fs::path absDirectoryPath = fs::absolute(directoryPath);
 
-	for (const auto &entry :
-		 fs::recursive_directory_iterator(absDirectoryPath)) {
-		fs::path relativePath = fs::relative(entry.path(), absDirectoryPath);
-		static_files.insert(relativePath.string());
-	}
+  for ( const auto& entry : fs::recursive_directory_iterator( directory ) ) {
+    fs::path relativePath = fs::relative( entry.path(), directory );
+    static_files.insert( relativePath.string() );
+  }
 
 //test
 	for(const auto& file: static_files){
