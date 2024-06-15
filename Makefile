@@ -8,7 +8,7 @@ OUTPUT_DIR := ./f
 
 # Define the compiler and the flags
 CXX := g++
-CXXFLAGS := -Wall -Wextra -std=c++17 -I $(SRC_DIR)/include
+CXXFLAGS := -Wall -Wextra -std=c++20 -I $(SRC_DIR)/include
 
 # Find all .cpp files in the source directory
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
@@ -34,7 +34,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 # Clean up build directory
 clean:
-	rm -rf $(BUILD_DIR)/obj $(TARGET)
+	rm -rf $(OBJ_DIR) $(TARGET)
 
 # Phony targets
 .PHONY: all clean
