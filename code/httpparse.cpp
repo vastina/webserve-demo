@@ -146,7 +146,7 @@ void httpparser::autoparse( const std::string& buf )
   autoparse( buf.c_str() );
 }
 
-std::string httpparser::operator[]( const std::string& str )
+std::string httpparser::operator[]( const std::string& str ) const
 {
   auto it = headers.find( str );
   return it != headers.end() ? it->second : "";

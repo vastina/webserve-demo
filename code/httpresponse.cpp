@@ -43,8 +43,13 @@ httpresponse::~httpresponse()
   body.clear();
 };
 
-void httpresponse::solverequestline( httpparser& parser )
+void httpresponse::solveRequest( const httpparser& parser )
 {
+  if ( parser["connection"] == "close\r" ) {
+    connection = CLOSE;
+  } else {
+    connection = KEEP_ALIVE;
+  }
   switch ( parser.getProtocol() ) {
     case HTTP_11: {
       switch ( parser.getMethod() ) {
@@ -125,39 +130,46 @@ void httpresponse::solvepath( const std::string& str )
   }
 }
 
-void httpresponse::addheader( std::string& response )
+static std::string formatRFC7231()
 {
-  response.append( "HTTP/1.1 " ).append( STATUS_STR.at( state ) );
-  response.append( "Date: Thu, 20 Jan 2022 12:00:00 GMT\r\n" );
-  response.append( "Server: localhost:6780\r\n" );
-  response.append( "Content-Length: " ).append( std::to_string( length ) ).append( "\r\n" );
-  response.append( "Content-Type: " ).append( CONTENNT_TYPE_STR.at( content_type ) ).append( " charset=utf-8\r\n" );
-  response.append( CONNECTION_STR.at( connection ) );
-  response.append( "\r\n" );
+  auto time { std::time( nullptr ) };
+  auto tm { *std::gmtime( &time ) }; // 获取UTC时间
+  tm.tm_hour += 8; // 东八区
+  std::ostringstream oss {};
+  oss << std::put_time( &tm, "%a, %d %b %Y %H:%M:%S GMT" );
+  return oss.str();
 }
 
-void httpresponse::autoresponse( httpparser& parser, char* buf )
+void httpresponse::addheader( std::vector<char>& resp )
 {
-  std::string response;
-  response.reserve( default_header_length );
-  memset( buf, 0, BUFSIZ );
+  const auto response = std::format( ""
+                                     "HTTP/1.1 {}\r\n"
+                                     "Date: {}\r\n"
+                                     "Server: 127.0.0.1\r\n"
+                                     "Content-Length: {}\r\n"
+                                     "Content-Type: {} charset=utf-8\r\n"
+                                     "{}"
+                                     "\r\n\r\n",
+                                     STATUS_STR.at( state ),
+                                     // config::port,
+                                     formatRFC7231(),
+                                     fs::file_size( filename ),
+                                     CONTENNT_TYPE_STR.at( content_type ),
+                                     CONNECTION_STR.at( connection ) );
+  for ( const auto ch : response )
+    resp.push_back( ch );
+}
 
-  if ( parser["connection"] == "close\r" ) {
-    connection = CLOSE;
-  } else {
-    connection = KEEP_ALIVE;
-  }
-
-  solverequestline( parser );
-
+void httpresponse::makeresponse( const httpparser& parser, int fd )
+{
+  solveRequest( parser );
+  std::vector<char> response {};
   addheader( response );
-
-  int len = response.size();
-  strcpy( buf, std::move( response.c_str() ) );
-
-  writefile( buf, len, filename );
-
-  // delete response;
+  ::write( fd, (void*)response.data(), response.size() );
+  auto& view { cachetree::getInstance().getfilecontent( filename ) };
+  ::write( fd, view.text, view.length );
+  // writev not work, why
+  //::writev( fd, iv, 2 );
 }
 
 void httpresponse::reset()

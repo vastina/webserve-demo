@@ -10,7 +10,7 @@ http::http( int _fd ) : fd { _fd }, parser {}, response {}, state { NOT_WORKING 
 
 void http::process()
 {
-  thread_local char readbuf[BUFSIZ], sendbuf[BUFSIZ];
+  thread_local char readbuf[BUFSIZ];
   thread_local int str_len;
   {
     std::unique_lock<std::mutex> lck( lock );
@@ -37,7 +37,8 @@ void http::process()
       return;
     } else {
       readbuf[str_len] = 0;
-      reponse_test( readbuf, sendbuf );
+      handleRequst( readbuf );
+      return;
     }
   }
 }
@@ -55,20 +56,12 @@ void http::reset()
   state = NOT_WORKING;
 }
 
-void http::reponse_test( const char* readbuf, char* buf )
+void http::handleRequst( const char* readbuf )
 {
-
   auto t1 = std::chrono::high_resolution_clock::now();
 
   parser.autoparse( readbuf );
-
-  std::cout << parser.getMethod() << '\n';
-  std::cout << parser.getPath() << '\n';
-  std::cout << parser.getProtocol() << '\n';
-  std::cout << parser.getBody() << '\n';
-
-  response.autoresponse( parser, buf );
-  write( fd, (void*)buf, BUFSIZ );
+  response.makeresponse( parser, fd );
 
   auto t2 = std::chrono::high_resolution_clock::now();
   std::cout << "response time: " << std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count() << '\n';

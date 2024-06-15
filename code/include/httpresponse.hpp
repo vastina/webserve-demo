@@ -49,11 +49,10 @@ public:
   ~httpresponse();
 
   void reset();
-
-  void autoresponse( httpparser& parser, char* buf );
-  void solverequestline( httpparser& parser );
+  void makeresponse( const httpparser& parser, int fd );
+  void solveRequest( const httpparser& parser );
   void solvepath( const std::string& str );
-  void addheader( std::string& response );
+  void addheader( std::vector<char>& );
 };
 
 } // namespace vastina
