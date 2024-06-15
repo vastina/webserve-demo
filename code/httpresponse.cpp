@@ -1,5 +1,4 @@
 #include "httpresponse.hpp"
-#include "config.hpp"
 
 #include <cerrno>
 #include <cstdio>
@@ -28,7 +27,7 @@ void cachetree::init_read( const fs::path& directory )
 }
 
 httpresponse::httpresponse()
-  : filename { "index.html" }, state { OK }, connection { KEEP_ALIVE }, content_type { TEXT } {};
+  : filename { "index.html" }, state { NOT_FOUND }, connection {NO_CONNECTION }, content_type { TEXT } {};
 
 httpresponse::~httpresponse()
 {

@@ -57,13 +57,13 @@ void http::reset()
 
 void http::handleRequst( const char* readbuf )
 {
-  auto t1 = std::chrono::high_resolution_clock::now();
+  //auto t1 = std::chrono::high_resolution_clock::now();
 
   parser.autoparse( readbuf );
   response.makeresponse( parser, fd );
 
-  auto t2 = std::chrono::high_resolution_clock::now();
-  std::cout << "response time: " << std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count() << '\n';
+  //auto t2 = std::chrono::high_resolution_clock::now();
+  //std::cout << "response time: " << std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count() << '\n';
 }
 
 bool http::connection_check()

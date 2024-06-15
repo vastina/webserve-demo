@@ -5,9 +5,9 @@
 void server::setsock( int domain, int type, int protocol, short port )
 {
   serversock = socket( domain, type, protocol );
-  int reuse = 1, nodelay = 1;
+  int reuse = 1;//, nodelay = 1;
   setsockopt( serversock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof( reuse ) );
-  setsockopt( serversock, IPPROTO_TCP, 1, &nodelay, sizeof( nodelay ) );
+  //setsockopt( serversock, IPPROTO_TCP, 1, &nodelay, sizeof( nodelay ) );
   int flag = fcntl( serversock, F_GETFL, 0 );
   fcntl( serversock, F_SETFL, flag | O_NONBLOCK );
 

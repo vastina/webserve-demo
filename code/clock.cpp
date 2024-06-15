@@ -7,7 +7,7 @@ namespace vastina {
 
 bool Clock::check_connection()
 {
-  if ( not_connected == false ) {
+  if ( not not_connected ) {
     start = std::chrono::system_clock::now();
     not_connected = true;
     return false;

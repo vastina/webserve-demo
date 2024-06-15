@@ -94,8 +94,6 @@ void httpparser::parseversion( const std::string& tmp )
 
 void httpparser::autoparse( const char* buf )
 {
-  auto t1 = std::chrono::high_resolution_clock::now();
-
   std::istringstream buf_stream( buf );
   parts part = START_LINE;
   std::string line;
@@ -136,9 +134,6 @@ void httpparser::autoparse( const char* buf )
         break;
     }
   }
-
-  auto t2 = std::chrono::high_resolution_clock::now();
-  std::cout << "parse time: " << std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count() << '\n';
 }
 
 void httpparser::autoparse( const std::string& buf )
