@@ -25,7 +25,7 @@ public:
     static cachetree cache;
     return cache;
   }
-  void init_read( const fs::path& directory = fs::current_path(), const fs::path& relativePath = fs::path() );
+  void init_read( const fs::path& directory = fs::current_path()/*, const fs::path& relativePath = fs::path()*/ );
 
   bool static_file_exist( const std::string& str );
 };

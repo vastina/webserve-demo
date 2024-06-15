@@ -16,7 +16,6 @@ void http::process()
     std::unique_lock<std::mutex> lck( lock );
     state = STATE::PROCESSING;
   }
-  std::cout << "fd: " << fd << '\n';
   while ( true ) {
     str_len = read( fd, readbuf, BUFSIZ );
     if ( str_len == 0 ) {
@@ -60,7 +59,6 @@ void http::reponse_test( const char* readbuf, char* buf )
 {
 
   auto t1 = std::chrono::high_resolution_clock::now();
-  // std::cout << readbuf <<'\n';
 
   parser.autoparse( readbuf );
 

@@ -27,7 +27,7 @@ class server
 private:
   int serversock;
 
-  vastina::Epoll* ep;
+  std::unique_ptr<vastina::Epoll> ep;
 
   // char readbuffer[BUFSIZ], sendbuffer[BUFSIZ] ;
   // Buffer *buffer;
@@ -39,15 +39,12 @@ private:
   ThreadPool pool;
 
 public:
-  server( size_t _maxevents = 50 ) : clients {}, pool { ThreadPool( 4 ) }
-  {
-    ep = new vastina::Epoll( _maxevents );
-    // buffer = new Buffer();
-  }
-  ~server()
-  {
-    // close(serversock);
-  }
+  server( size_t _maxevents = 50 ) 
+    : ep { std::make_unique<vastina::Epoll>( _maxevents ) }
+    , clients {}
+    , pool { ThreadPool( 4 ) }
+  {}
+  ~server() {}
   void init();
   void setsock( int af, int type, int protocol, short port = 1453 );
   void closeFD( int fd );

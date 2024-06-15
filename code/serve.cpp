@@ -40,7 +40,7 @@ void server::closeFD( int fd )
 void server::run()
 {
 
-  std::cout << "Enter q to quit\n";
+  // std::cout << "Enter q to quit\n";
   struct sockaddr_in addr;
   socklen_t len = sizeof( addr );
 
@@ -60,18 +60,17 @@ void server::run()
           else
             clients[clntsock]->reset();
 
-          std::cout << "fd: " << clntsock << '\n';
+          // std::cout << "fd: " << clntsock << '\n';
 
           pool.enqueue( [this, clntsock]() { clients[clntsock]->process(); } );
         } else {
           int clntsock = ep->getfd( i );
           int callback = clients[clntsock]->getcallback();
-          std::cout << "fd: " << clntsock << " callback: " << callback << '\n';
+          // std::cout << "fd: " << clntsock << " callback: " << callback << '\n';
           if ( callback == vastina::http::STATE::NORMAL_END ) {
             if ( !clients[clntsock]->connection_check() )
               closeFD( clntsock );
           } else if ( callback == vastina::http::STATE::ERROR_END ) {
-            if ( errno != EAGAIN && errno != EWOULDBLOCK )
               closeFD( clntsock );
             // todo:log it
           }
@@ -88,7 +87,7 @@ void server::run()
 
 void server::end()
 {
-  close( serversock );
+  stopflag = false;
   clients.clear();
-  ep->~Epoll();
+  close( serversock );
 }

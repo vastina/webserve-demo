@@ -10,7 +10,7 @@ bool cachetree::static_file_exist( const std::string& str )
   return static_files.find( str ) != static_files.end();
 }
 
-void cachetree::init_read( const fs::path& directory, const fs::path& relativePath )
+void cachetree::init_read( const fs::path& directory )
 {
   // const std::string directoryPath = "./";
   // fs::path absDirectoryPath = fs::absolute(directoryPath);
@@ -20,10 +20,6 @@ void cachetree::init_read( const fs::path& directory, const fs::path& relativePa
     static_files.insert( relativePath.string() );
   }
 
-  // test
-  for ( const auto& file : static_files ) {
-    std::cout << file << std::endl;
-  }
 }
 
 void writefile( char* buf, int count, std::string filename )
