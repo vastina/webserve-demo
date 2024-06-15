@@ -12,6 +12,7 @@ struct Clock
   std::chrono::time_point<std::chrono::system_clock> start;
   bool not_connected;
   bool check_connection();
+  void reset();
 };
 
 } // namespace vastina

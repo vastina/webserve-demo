@@ -65,7 +65,7 @@ template<class F, class... Args>
 void ThreadPool::enqueue( F&& f, Args&&... args )
 {
   //-> std::future<typename std::result_of<F(Args...)>::type> {
-  // using return_type = typename std::result_of<F(Args...)>::type;
+  using return_type = typename std::result_of<F(Args...)>::type;
 
   // auto task = std::make_shared<std::packaged_task<return_type()>>(
   // 	std::bind(std::forward<F>(f), std::forward<Args>(args)...));
@@ -82,13 +82,13 @@ void ThreadPool::enqueue( F&& f, Args&&... args )
   // }
   // condition.notify_one();
   // return res;
-  std::function<decltype( f( args... ) )()> func = std::bind( std::forward<F>( f ), std::forward<Args>( args )... );
-  auto task_ptr = std::make_shared<std::packaged_task<decltype( f( args... ) )()>>( func );
+  std::function<return_type()> func = std::bind( std::forward<F>( f ), std::forward<Args>( args )... );
+  auto task_ptr = std::make_shared<std::packaged_task<return_type()>>( func );
   {
     std::unique_lock<std::mutex> lock( queue_mutex );
     if ( stop )
       throw std::runtime_error( "enqueue on stopped ThreadPool" );
-    tasks.emplace( [task_ptr]() { ( *task_ptr )(); } );
+    tasks.emplace( [task_ptr]() { return ( *task_ptr )(); } );
   }
   condition.notify_one();
 }

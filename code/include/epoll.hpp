@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <sys/unistd.h>
 
+#include "config.hpp"
+
 namespace vastina {
 
 class Epoll
@@ -16,7 +18,6 @@ private:
   epoll_event event;
   int epfd;
   size_t maxevents;
-  const static int timeMs = -1;
 
   struct _stdincheck
   {
@@ -25,7 +26,7 @@ private:
   } stdinchecker;
 
 public:
-  Epoll( size_t _maxevents = 50 );
+  Epoll( size_t _maxevents = config::epoll_maxevents );
   ~Epoll();
 
   void init( int serversock );

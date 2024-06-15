@@ -1,4 +1,5 @@
 #include "epoll.hpp"
+#include "config.hpp"
 
 #include <iostream>
 #include <unistd.h>
@@ -42,7 +43,7 @@ void Epoll::init( int serversock )
 
 int Epoll::Epoll_wait()
 {
-  return epoll_wait( epfd, ep_events, maxevents, timeMs );
+  return epoll_wait( epfd, ep_events, maxevents, config::epoll_timeout );
 }
 
 uint32_t Epoll::getevent( int index )

@@ -1,6 +1,7 @@
 #ifndef _SERVE_SOCK_H_
 #define _SERVE_SOCK_H_
 
+#include <memory>
 #include <sys/socket.h>
 #include <sys/unistd.h>
 #include <arpa/inet.h>
@@ -26,27 +27,25 @@ class server
 {
 private:
   int serversock;
-
   std::unique_ptr<vastina::Epoll> ep;
-
-  // char readbuffer[BUFSIZ], sendbuffer[BUFSIZ] ;
-  // Buffer *buffer;
-  // to be finished as a class or struct
   bool stopflag;
-
   std::unordered_map<int, vastina::http*> clients;
-
   ThreadPool pool;
 
 public:
-  server( size_t _maxevents = 50 ) 
-    : ep { std::make_unique<vastina::Epoll>( _maxevents ) }
+  server()
+    : ep { std::make_unique<vastina::Epoll>() }
     , clients {}
-    , pool { ThreadPool( 4 ) }
+    , pool { ThreadPool( 16 ) }
   {}
-  ~server() {}
+  ~server()
+  {
+    for ( auto& [k, v] : clients )
+      delete v;
+    clients.clear();
+  }
   void init();
-  void setsock( int af, int type, int protocol, short port = 1453 );
+  void setsock( int, int, int, short = 1453 );
   void closeFD( int fd );
   void run();
   void end();
