@@ -40,7 +40,7 @@ public:
 
   void reset();
 
-  std::string operator[]( const std::string& str );
+  std::string operator[]( const std::string& str ) const;
 
   METHOD getMethod() const;
   const std::string& getPath() const;

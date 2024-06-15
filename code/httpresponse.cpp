@@ -1,41 +1,34 @@
 #include "httpresponse.hpp"
+#include "config.hpp"
 
-#include <iostream>
-#include <fstream>
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+#include <filesystem>
+#include <format>
+#include <string>
+#include <unistd.h>
+#include <utility>
+#include <sys/uio.h>
+#include <vector>
 
 namespace vastina {
 
 bool cachetree::static_file_exist( const std::string& str )
 {
-  return static_files.find( str ) != static_files.end();
+  return file_content.contains( str );
 }
 
 void cachetree::init_read( const fs::path& directory )
 {
-  // const std::string directoryPath = "./";
-  // fs::path absDirectoryPath = fs::absolute(directoryPath);
-
   for ( const auto& entry : fs::recursive_directory_iterator( directory ) ) {
     fs::path relativePath = fs::relative( entry.path(), directory );
-    static_files.insert( relativePath.string() );
+    file_content.insert( std::make_pair<std::string, fileview>( relativePath.string(), { nullptr, 0 } ) );
   }
-
-}
-
-void writefile( char* buf, int count, std::string filename )
-{
-  std::ifstream infile;
-  infile.open( filename, std::ifstream::in );
-  infile.read( buf + count, BUFSIZ - count );
-  infile.close();
 }
 
 httpresponse::httpresponse()
-  : filename { "index.html" }
-  , state { OK }
-  , connection { KEEP_ALIVE }
-  , content_type { TEXT }
-  , length { default_body_length } {};
+  : filename { "index.html" }, state { OK }, connection { KEEP_ALIVE }, content_type { TEXT } {};
 
 httpresponse::~httpresponse()
 {
@@ -80,29 +73,21 @@ void httpresponse::solvepath( const std::string& str )
     filename = "index.html";
     state = OK;
     content_type = TEXT;
-
-    length = default_body_length;
   } else if ( str == "/test" ) {
     filename = "204.html";
     state = ACCEPTED;
     content_type = TEXT;
-
-    length = default_body_length;
   } else if ( str == "/login?text=test" ) {
     // todo: parse action?body
     filename = "page2/gettest.html";
     state = OK;
     content_type = TEXT;
-
-    length = default_body_length;
   } else {
     filename = str.substr( 1 );
     if ( !cachetree::getInstance().static_file_exist( filename ) ) {
       filename = "404.html";
       state = NOT_FOUND;
       content_type = TEXT;
-
-      length = default_body_length;
     } else
       state = OK;
     if ( state == OK ) {
@@ -134,7 +119,7 @@ static std::string formatRFC7231()
 {
   auto time { std::time( nullptr ) };
   auto tm { *std::gmtime( &time ) }; // 获取UTC时间
-  tm.tm_hour += 8; // 东八区
+  tm.tm_hour += 8;                   // 东八区
   std::ostringstream oss {};
   oss << std::put_time( &tm, "%a, %d %b %Y %H:%M:%S GMT" );
   return oss.str();
@@ -178,7 +163,6 @@ void httpresponse::reset()
   state = NOT_FOUND;
   connection = NO_CONNECTION;
   content_type = TEXT;
-  length = default_body_length;
 }
 
 } // namespace vastina

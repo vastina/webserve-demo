@@ -8,14 +8,9 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <unordered_map>
-#include <errno.h>
-#include <stdio.h>
 #include <fcntl.h>
-#include <queue>
 
-#include "loger.hpp"
 #include "http.hpp"
-#include "buffer.hpp"
 #include "epoll.hpp"
 #include "ThreadPool.hpp"
 
@@ -33,11 +28,7 @@ private:
   ThreadPool pool;
 
 public:
-  server()
-    : ep { std::make_unique<vastina::Epoll>() }
-    , clients {}
-    , pool { ThreadPool( 16 ) }
-  {}
+  server() : ep { std::make_unique<vastina::Epoll>() }, clients {}, pool { ThreadPool( 16 ) } {}
   ~server()
   {
     for ( auto& [k, v] : clients )

@@ -4,8 +4,6 @@
 
 namespace vastina {
 
-http::http() : fd { -1 }, parser {}, response {}, state { NOT_WORKING }, clock { new Clock() } {};
-
 http::http( int _fd ) : fd { _fd }, parser {}, response {}, state { NOT_WORKING }, clock { new Clock() } {};
 
 void http::process()
@@ -43,7 +41,7 @@ void http::process()
   }
 }
 
-int http::getcallback()
+http::STATE http::getcallback()
 {
   std::unique_lock<std::mutex> lck( lock );
   return state;
@@ -51,6 +49,7 @@ int http::getcallback()
 
 void http::reset()
 {
+  clock->reset();
   parser.reset();
   response.reset();
   state = NOT_WORKING;

@@ -10,7 +10,7 @@ using i64 = std::int64_t;
 
 namespace config {
 
-extern short port ;
+extern short port;
 constexpr static u64 epoll_maxevents = 50;
 constexpr static i64 connection_timeout = 10;
 constexpr static int epoll_timeout = -1;
