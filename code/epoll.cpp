@@ -28,7 +28,7 @@ int Epoll::Epoll_wait()
   return epoll_wait( epfd, ep_events, maxevents, config::epoll_timeout );
 }
 
-uint32_t Epoll::getevent( int index )
+u32 Epoll::getevent( int index )
 {
   return ep_events[index].events;
 }
@@ -45,8 +45,7 @@ void Epoll::epoll_add( int fd )
 
 void Epoll::epoll_del( int fd )
 {
-  event = { STDIN_FILENO, { .fd = STDIN_FILENO } };
-
+  event = {0, {}};
   epoll_ctl( epfd, EPOLL_CTL_DEL, fd, &event );
 }
 

@@ -1,6 +1,7 @@
 #include "httpresponse.hpp"
 
 #include <cerrno>
+#include <csignal>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -147,13 +148,24 @@ void httpresponse::addheader( std::vector<char>& resp )
 void httpresponse::makeresponse( const httpparser& parser, int fd )
 {
   solveRequest( parser );
-  std::vector<char> response {};
-  addheader( response );
-  ::write( fd, (void*)response.data(), response.size() );
+
+  std::vector<char> response {};  addheader( response );
+  while (true) {
+    int res = ::write( fd, (void*)response.data(), response.size() );
+    if ( res == -1 ) {
+      return;
+    } else break;
+  }
+
   auto& view { cachetree::getInstance().getfilecontent( filename ) };
-  ::write( fd, view.text, view.length );
-  // writev not work, why
-  //::writev( fd, iv, 2 );
+  while (true) {
+    int res = ::write( fd, view.text, view.length );
+    if ( res == -1 ) {
+      // if( SIGPIPE == errno )
+      //   return;
+      return;
+    } else break;
+  }
 }
 
 void httpresponse::reset()

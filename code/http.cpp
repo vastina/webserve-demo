@@ -10,25 +10,25 @@ void http::process()
 {
   thread_local char readbuf[BUFSIZ];
   thread_local int str_len;
-  {
-    std::unique_lock<std::mutex> lck( lock );
-    state = STATE::PROCESSING;
-  }
+  // {
+  //   std::unique_lock<std::mutex> lck( lock );
+  //   state = STATE::PROCESSING;
+  // }
   while ( true ) {
     str_len = read( fd, readbuf, BUFSIZ );
     if ( str_len == 0 ) {
-      {
-        std::unique_lock<std::mutex> lck( lock );
-        state = STATE::NORMAL_END;
-      }
+      // {
+      //   std::unique_lock<std::mutex> lck( lock );
+      //   state = STATE::NORMAL_END;
+      // }
       return;
     } else if ( str_len == -1 ) {
       {
         if ( EAGAIN == errno || EWOULDBLOCK == errno || EINTR == errno ) {
           continue;
         }
-        std::unique_lock<std::mutex> lck( lock );
-        state = STATE::ERROR_END;
+        // std::unique_lock<std::mutex> lck( lock );
+        // state = STATE::ERROR_END;
         std::cout << "fd: " << fd << " error: " << errno << '\n';
         // todo: send error
       }

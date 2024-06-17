@@ -28,6 +28,11 @@ int main( int argv, const char* argc[] )
     std::cout << "SIGQUIT" << '\n';
     make_end();
   } );
+  ::signal( SIGSEGV, []( int ) {
+    std::cout << "SIGSEGV" << '\n';
+    make_end();
+  } );
+  ::signal( SIGPIPE, []( int ) {} );
 
   vastina::config::port = argv > 1 ? atoi( argc[1] ) : 5678;
   test->setsock( AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0, vastina::config::port );

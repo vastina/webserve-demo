@@ -1,6 +1,6 @@
 #include "serve.hpp"
 #include "ThreadPool.hpp"
-#include <strings.h>
+#include "config.hpp"
 
 void server::setsock( int domain, int type, int protocol, short port )
 {
@@ -52,29 +52,37 @@ void server::run()
     if ( event_cnt == -1 ) { // until now, I haven't met this situation
       printf( "epoll_wait fail, error code: %d\n", errno );
     }
-    for ( auto i = 0; i < event_cnt; ++i ) {
-      if ( ep->getevent( i ) & EPOLLIN ) {
-        int sock = ep->getfd( i );
-        if ( sock == serversock ) {
-          int clntsock = accept( serversock, (struct sockaddr*)&addr, &len );
-          ep->epoll_add( clntsock );
-
-          if ( !clients.contains( clntsock ) )
-            clients[clntsock] = new vastina::http( clntsock );
-          else
-            clients[clntsock]->reset();
-
-          pool.enqueue( [this, clntsock]() { clients[clntsock]->process(); } );
-        } else {
-          auto callback = clients[sock]->getcallback();
-          if ( callback == vastina::http::STATE::NORMAL_END ) {
-            if ( !clients[sock]->connection_check() )
-              closeFD( sock );
-          } else if ( callback == vastina::http::STATE::ERROR_END ) {
-            closeFD( sock );
-            // todo:log it
-          }
+    for ( auto i = 0; i < event_cnt && i < vastina::config::epoll_maxevents; ++i ) {
+      int sock = ep->getfd( i );
+      auto events = ep->getevent( i );
+       if ( sock == serversock ) {
+        int clntsock = accept( serversock, (struct sockaddr*)&addr, &len );
+        if( clntsock < 0 ) continue;
+        else if( clntsock >= 65536 ) {
+          ::close( clntsock );
+          continue;
         }
+        ep->epoll_add( clntsock );
+        if ( !clients.contains( clntsock ) )
+          clients[clntsock] = new vastina::http( clntsock );
+        else
+          clients[clntsock]->reset();
+
+        pool.enqueue( [this, clntsock]() {
+          clients[clntsock]->process();
+          closeFD(clntsock);
+        } );
+      } else if ( events & EPOLLIN ) {
+        // std::cout << '(' << sock << " read) ";
+      } else if ( events & EPOLLOUT ) {
+        // std::cout << '(' << sock << " write) ";
+      } else if ( events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR) ) {
+        // std::cout << '(' << sock << " close) ";
+        // closeFD( sock );
+      } else {
+
+      }
+    }
   }
 }
 
