@@ -19,11 +19,11 @@ private:
   int epfd;
   size_t maxevents;
 
-  struct _stdincheck
-  {
-    epoll_event event[1];
-    int epstdin;
-  } stdinchecker;
+  // struct _stdincheck
+  // {
+  //   epoll_event event[1];
+  //   int epstdin;
+  // } stdinchecker;
 
 public:
   Epoll( size_t _maxevents = config::epoll_maxevents );
@@ -36,7 +36,7 @@ public:
   void epoll_del( int index );
   int getfd( int index );
 
-  bool stdincheck();
+  // bool stdincheck();
 };
 
 } // namespace vastina

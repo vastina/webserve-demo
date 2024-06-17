@@ -1,14 +1,13 @@
 #include "epoll.hpp"
 #include "config.hpp"
 
-#include <iostream>
 #include <unistd.h>
 
 namespace vastina {
 
 Epoll::Epoll( size_t _maxevents ) : epfd { epoll_create( _maxevents ) }, maxevents { _maxevents }
 {
-  stdinchecker.epstdin = epoll_create( 1 );
+  // stdinchecker.epstdin = epoll_create( 1 );
   ep_events = new epoll_event[_maxevents];
 }
 
@@ -18,23 +17,23 @@ Epoll::~Epoll()
   delete[] ep_events;
 }
 
-bool Epoll::stdincheck()
-{
-  if ( epoll_wait( stdinchecker.epstdin, stdinchecker.event, 1, 1 ) ) {
-    char input;
-    read( STDIN_FILENO, &input, 1 );
-    std::cout << "input: " << input << '\n';
-    if ( input == 'q' )
-      return false;
-  }
-  return true;
-}
+// bool Epoll::stdincheck()
+// {
+//   if ( epoll_wait( stdinchecker.epstdin, stdinchecker.event, 1, 1 ) ) {
+//     char input;
+//     read( STDIN_FILENO, &input, 1 );
+//     std::cout << "input: " << input << '\n';
+//     if ( input == 'q' )
+//       return false;
+//   }
+//   return true;
+// }
 
 void Epoll::init( int serversock )
 {
-  event.data.fd = STDIN_FILENO;
-  event.events = EPOLLIN;
-  epoll_ctl( stdinchecker.epstdin, EPOLL_CTL_ADD, STDOUT_FILENO, &event );
+  // event.data.fd = STDIN_FILENO;
+  // event.events = EPOLLIN;
+  // epoll_ctl( stdinchecker.epstdin, EPOLL_CTL_ADD, STDOUT_FILENO, &event );
 
   event.data.fd = serversock;
   event.events = EPOLLIN | EPOLLET;

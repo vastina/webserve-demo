@@ -81,7 +81,7 @@ void server::run()
         closeFD( sock );
       }
     }
-    stopflag = ep->stdincheck();
+    // stopflag = ep->stdincheck();
   }
 }
 
