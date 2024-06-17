@@ -19,12 +19,6 @@ private:
   int epfd;
   size_t maxevents;
 
-  // struct _stdincheck
-  // {
-  //   epoll_event event[1];
-  //   int epstdin;
-  // } stdinchecker;
-
 public:
   Epoll( size_t _maxevents = config::epoll_maxevents );
   ~Epoll();

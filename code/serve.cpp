@@ -75,13 +75,6 @@ void server::run()
             // todo:log it
           }
         }
-      }
-      if ( ep->getevent( i ) & EPOLLHUP ) {
-        int sock = ep->getfd( i );
-        closeFD( sock );
-      }
-    }
-    // stopflag = ep->stdincheck();
   }
 }
 
