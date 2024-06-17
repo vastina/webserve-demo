@@ -1,4 +1,5 @@
 f/demo
+f/log.txt
 build/*
 .vscode/*
 test/*
