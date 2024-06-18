@@ -83,8 +83,8 @@ public:
   void makeresponse( const httpparser& parser, int fd );
   void solveRequest( const httpparser& parser );
   void solvepath( const std::string& str );
-  void addheader( std::vector<char>& );
-  std::string addheader () const;
+  void addheader( int );
+  std::string addheader ( ) const;
 };
 
 } // namespace vastina

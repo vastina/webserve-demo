@@ -1,6 +1,7 @@
 #include "httpresponse.hpp"
 
 #include <cerrno>
+#include <charconv>
 #include <csignal>
 #include <cstdio>
 #include <cstring>
@@ -125,24 +126,41 @@ static std::string formatRFC7231()
   return oss.str();
 }
 
-void httpresponse::addheader( std::vector<char>& resp )
+void httpresponse::addheader( int fd )
 {
-  const auto response = std::format( ""
-                                     "HTTP/1.1 {}\r\n"
-                                     "Date: {}\r\n"
-                                     "Server: 127.0.0.1\r\n"
-                                     "Content-Length: {}\r\n"
-                                     "Content-Type: {} charset=utf-8\r\n"
-                                     "{}"
-                                     "\r\n\r\n",
-                                     STATUS_STR.at( state ),
-                                     // config::port,
-                                     formatRFC7231(),
-                                     fs::file_size( filename ),
-                                     CONTENNT_TYPE_STR.at( content_type ),
-                                     CONNECTION_STR.at( connection ) );
-  for ( const auto ch : response )
-    resp.push_back( ch );
+  // const auto response = std::format( ""
+  //                                    "HTTP/1.1 {}\r\n"
+  //                                    "Date: {}\r\n"
+  //                                    "Server: 127.0.0.1\r\n"
+  //                                    "Content-Length: {}\r\n"
+  //                                    "Content-Type: {} charset=utf-8\r\n"
+  //                                    "{}"
+  //                                    "\r\n\r\n",
+  //                                    STATUS_STR.at( state ),
+  //                                    // config::port,
+  //                                    formatRFC7231(),
+  //                                    fs::file_size( filename ),
+  //                                    CONTENNT_TYPE_STR.at( content_type ),
+  //                                    CONNECTION_STR.at( connection ) );
+  // for ( const auto ch : response )
+  //   resp.push_back( ch );
+  ::write( fd, "HTTP/1.1 ", 9 );
+  const auto& status_str { STATUS_STR.at( state ) };
+  ::write( fd, status_str.data(), status_str.size() );
+  ::write( fd, "\r\nDate: ", 8 );
+  const auto& date_str { formatRFC7231() };
+  ::write( fd, date_str.data(), date_str.size() );
+  ::write(fd, "\r\nServer:127.0.0.1\r\nContent-Length: ", 36);
+  char buf[6];
+  auto [p, ec] = std::to_chars( buf, buf + 6, fs::file_size(filename));
+  ::write(fd, buf, p - buf);
+  ::write(fd, "\r\nContent-Type: ", 16);
+  const auto& content_type_str { CONTENNT_TYPE_STR.at( content_type ) };
+  ::write(fd, content_type_str.data(), content_type_str.size());
+  ::write(fd, " charset=utf-8\r\n", 16);
+  const auto& connection_str { CONNECTION_STR.at( connection ) };
+  ::write(fd, connection_str.data(), connection_str.size());
+  ::write(fd, "\r\n\r\n", 4);
 }
 
 std::string httpresponse::addheader() const
@@ -167,7 +185,11 @@ void httpresponse::makeresponse( const httpparser& parser, int fd )
 {
   solveRequest( parser );
 
+  // 1
+  // addheader( fd );
+  // 2
   // std::vector<char> response {};  addheader( response );
+  // 3
   std::string response { addheader() };
   while (true) {
     int res = ::write( fd, (void*)response.data(), response.size() );
@@ -175,6 +197,7 @@ void httpresponse::makeresponse( const httpparser& parser, int fd )
       return;
     } else break;
   }
+  // 1和3差不多，2差不多得了
 
   auto& view { cachetree::getInstance().getfilecontent( filename ) };
   while (true) {
