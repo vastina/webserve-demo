@@ -68,11 +68,11 @@ void server::run()
         else
           clients[clntsock]->reset();
 
-        pool.enqueue( [this, clntsock]() {
-          clients[clntsock]->process();
-          closeFD(clntsock);
-        } );
       } else if ( events & EPOLLIN ) {
+        pool.enqueue( [this, sock]() {
+          clients[sock]->process();
+          closeFD(sock);
+        } );
         // std::cout << '(' << sock << " read) ";
       } else if ( events & EPOLLOUT ) {
         // std::cout << '(' << sock << " write) ";
