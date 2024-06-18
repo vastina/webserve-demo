@@ -145,11 +145,30 @@ void httpresponse::addheader( std::vector<char>& resp )
     resp.push_back( ch );
 }
 
+std::string httpresponse::addheader() const
+{
+  return std::format( ""
+                                     "HTTP/1.1 {}\r\n"
+                                     "Date: {}\r\n"
+                                     "Server: 127.0.0.1\r\n"
+                                     "Content-Length: {}\r\n"
+                                     "Content-Type: {} charset=utf-8\r\n"
+                                     "{}"
+                                     "\r\n\r\n",
+                                     STATUS_STR.at( state ),
+                                     // config::port,
+                                     formatRFC7231(),
+                                     fs::file_size( filename ),
+                                     CONTENNT_TYPE_STR.at( content_type ),
+                                     CONNECTION_STR.at( connection ) );
+}
+
 void httpresponse::makeresponse( const httpparser& parser, int fd )
 {
   solveRequest( parser );
 
-  std::vector<char> response {};  addheader( response );
+  // std::vector<char> response {};  addheader( response );
+  std::string response { addheader() };
   while (true) {
     int res = ::write( fd, (void*)response.data(), response.size() );
     if ( res == -1 ) {
