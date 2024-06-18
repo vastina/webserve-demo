@@ -4,5 +4,5 @@ build/*
 .vscode/*
 test/*
 log/logtest.txt
-# this is for clangd
+perf.*
 .cache/
